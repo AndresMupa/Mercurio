@@ -36,14 +36,34 @@ php artisan migrate --database=pgsql_owner
 
 ### Pruebas
 
+Una vez por clon, activa los hooks del repositorio:
+
 ```bash
-DB_DATABASE=platform_test php artisan migrate:fresh --database=pgsql_owner --force
-./vendor/bin/pest                          # suite completa
-./vendor/bin/pest --group=tenant-isolation # lo que bloquea el pre-commit
+./scripts/install-git-hooks.sh
+```
+
+A partir de ahí, **un commit con una prueba de aislamiento rota no pasa**. El hook falla
+cerrado: si no puede ejecutar las pruebas —falta `vendor`, la base no responde— bloquea
+igual, porque dejar pasar el commit sin haber comprobado nada da confianza sin respaldarla.
+
+```bash
+cd apps/platform
+composer test:prepare   # migra platform_test con el dueño del esquema
+composer test           # suite completa (Pest)
+composer test:tenant    # solo el grupo tenant-isolation, lo que bloquea el commit
+composer lint           # Pint en modo comprobación
+npm run e2e             # Playwright contra la aplicación servida
+npm run build           # assets de producción
 ```
 
 Las pruebas corren contra PostgreSQL real y con el rol de aplicación. No se sustituye por
 sqlite: sin RLS, unas pruebas de aislamiento pasarían siempre sin comprobar nada.
+
+Si usas un Chromium ya instalado en vez del que descarga Playwright:
+
+```bash
+PLAYWRIGHT_CHROMIUM_PATH=/ruta/a/chromium npm run e2e
+```
 
 ## Cómo trabajar en el repositorio
 

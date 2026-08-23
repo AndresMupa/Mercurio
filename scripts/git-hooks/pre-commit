@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+# Los hooks viven versionados aquí y se activan con scripts/install-git-hooks.sh,
+# que apunta core.hooksPath a este directorio. Así el hook viaja con el repositorio
+# en vez de depender de que cada clon recuerde copiarlo a .git/hooks.
+set -euo pipefail
+exec "$(git rev-parse --show-toplevel)/scripts/pre-commit-tenant-isolation.sh"

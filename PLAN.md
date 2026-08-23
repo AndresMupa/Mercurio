@@ -42,7 +42,7 @@ separados: el dueño del esquema (migraciones) y el rol de la aplicación (runti
 > dueño del esquema y la aplicación respondiendo— sí se verificó contra PostgreSQL 16 y
 > Redis locales. Detalle y acciones pendientes en `STATE.md`.
 
-## [ ] A2 · Armar el harness operativo
+## [x] A2 · Armar el harness operativo
 
 **Objetivo:** que las reglas se cumplan solas.
 
@@ -56,6 +56,13 @@ separados: el dueño del esquema (migraciones) y el rol de la aplicación (runti
 
 **Entregable:** un commit con una prueba de aislamiento rota **no pasa**.
 **DoD:** nivel A. Verificación manual obligatoria de que el hook bloquea de verdad.
+
+> Hecho el 23-ago-2026. Verificación manual **ejecutada**, no asumida: con una fuga real
+> entre tenants (`ALTER POLICY ... USING (true)`), `git commit` salió con código 1 y no
+> creó commit. La compuerta de arranque se comprobó igual, concediendo `BYPASSRLS` y
+> revocándolo después. Pest ya venía de A1; se añadieron Playwright, el hook versionado,
+> `PlatformServiceProvider` y un comando por compuerta del DoD. **TYPECHECK sigue sin
+> herramienta** por la restricción de red del entorno. Detalle en `STATE.md`.
 
 ---
 

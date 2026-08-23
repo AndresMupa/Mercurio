@@ -7,12 +7,13 @@
 
 ## Slice actual
 
-**Slice 0 — Foundation** · paso **A1 completado**, siguiente **A2** de `PLAN.md`
+**Slice 0 — Foundation** · **Etapa A completa (A1 y A2)**, siguiente **B1** de `PLAN.md`
 `COMMERCIAL VALUE: —` (único slice estructural permitido) · `DoD LEVEL: B` · `DATA CLASSIFICATION: P3`
 
-Estado: **A1 en verde salvo la compuerta TYPECHECK**, que no pudo instalarse por una
-restricción de red del entorno (ver `## Bloqueos`). El colegio ancla dio luz verde al piloto
-el 23 de agosto de 2026.
+Estado: **A1 y A2 en verde salvo la compuerta TYPECHECK**, que no pudo instalarse por una
+restricción de red del entorno (ver `## Bloqueos`). El harness operativo ya se cumple solo:
+un commit con una prueba de aislamiento rota **no pasa**, verificado a mano. El colegio ancla
+dio luz verde al piloto el 23 de agosto de 2026.
 
 > **`PLAN.md` es el documento que se ejecuta.** Un paso por sesión, en orden, marcando la casilla
 > y haciendo commit al terminar cada uno.
@@ -110,6 +111,56 @@ filas y falla cerrada de verdad.
 > el resto de la migración merece la misma desconfianza. Revisar en particular si algún otro
 > punto del diseño asume que `app.tenant_id` puede volver a NULL.
 
+## Paso A2 — hecho el 23-ago-2026
+
+El harness operativo. A partir de aquí las reglas dejan de depender de la disciplina de quien
+programa: hay máquinas que las sostienen.
+
+| Qué | Dónde |
+|---|---|
+| Hook de pre-commit, versionado y falla cerrado | `scripts/pre-commit-tenant-isolation.sh` |
+| Activación por clon (`core.hooksPath`) | `scripts/install-git-hooks.sh` · `scripts/git-hooks/` |
+| Compuerta de arranque: la app no opera si el rol puede saltarse la RLS | `apps/platform/app/Providers/PlatformServiceProvider.php` |
+| Pruebas del cableado de esa compuerta | `apps/platform/tests/Feature/BootGuardTest.php` |
+| Playwright + E2E contra la pantalla servida | `apps/platform/playwright.config.js` · `tests/E2E/foundation.spec.js` |
+| Cada compuerta del DoD, un comando | `composer lint · test:prepare · test · test:tenant` · `npm run e2e · build` |
+
+### La verificación manual que exige el PLAN — hecha, no asumida
+
+No basta con que el hook exista; el entregable de A2 es que **un commit con una prueba de
+aislamiento rota no pase**. Se comprobó rompiendo el aislamiento de verdad:
+
+1. `ALTER POLICY tenant_isolation ON people USING (true)` en la base de pruebas — una fuga
+   real entre tenants, no un fallo simulado.
+2. El grupo `tenant-isolation` se puso en rojo: 4 pruebas fallando.
+3. `git commit` → **código de salida 1, sin commit creado, HEAD intacto**.
+4. Política restaurada y suite de nuevo en verde (22 pruebas, 68 aserciones).
+
+También se verificó la compuerta de arranque por el mismo método: con `BYPASSRLS` concedido
+a `platform_app`, `platform:check-foundation` sale con código 1, cualquier consulta a la base
+lanza `RuntimeException` y la suite se pone en rojo. Privilegio revocado después.
+
+### Decisiones tomadas en este paso
+
+1. **El hook falla cerrado.** Si no puede ejecutar las pruebas —falta `vendor`, la base no
+   responde— bloquea igual. Un hook que deja pasar el commit cuando no pudo comprobar nada
+   es peor que no tenerlo: da confianza sin respaldarla.
+2. **Se corrigió la ruta del script.** Invocaba `./vendor/bin/pest` desde la raíz y la
+   aplicación vive en `apps/platform`; tal como estaba no habría ejecutado nada y habría
+   dejado pasar todo.
+3. **Los hooks viven versionados en `scripts/git-hooks/`** y se activan apuntando
+   `core.hooksPath`, no copiando a `.git/hooks`. Así viajan con el repositorio.
+4. **La compuerta de arranque se engancha a `ConnectionEstablished`, no al boot del
+   framework.** En el arranque no hay conexión que interrogar, y forzarla obligaría a
+   conectar en peticiones que no tocan la base. Al conectar cubre además la reconexión y
+   un `GRANT` hecho en caliente. Coste: una consulta a `pg_roles` por proceso.
+5. **La pantalla de estado es la única superficie que informa del fallo en vez de morir con
+   él.** Un diagnóstico que se cae en lugar de decir qué está roto no sirve. Queda
+   documentado en el controlador para que el patrón no se copie en pantallas de producto.
+6. **No se usó `skill-creator`.** `PLAN.md` lo marca como opcional y el loop del harness ya
+   está sostenido por `CLAUDE.md`, `STATE.md` y los comandos de `.claude/commands/`.
+   Empaquetarlo como skill habría añadido una capa sin resolver ningún problema abierto.
+
 ## Decisiones tomadas
 
 | Fecha | Decisión | Dónde |
@@ -153,17 +204,20 @@ descarga de `repo.packagist.org` sin problema y clona por git desde `github.com`
 no se puede instalar aquí. Se revirtió el intento y `composer.json`/`composer.lock` quedaron
 consistentes (`composer validate` en verde, `composer install --dry-run` sin operaciones).
 
-Consecuencia: **el DoD nivel A de A1 está en verde en BUILD, LINT, UNIT, INTEGRATION y
-DOCUMENTATION, y sin verificar en TYPECHECK.** No se marca como cumplido lo que no se ejecutó.
+Consecuencia: **el DoD nivel A de A1 y de A2 está en verde en BUILD, LINT, UNIT,
+INTEGRATION y DOCUMENTATION, y sin verificar en TYPECHECK.** No se marca como cumplido lo
+que no se ejecutó. A2 tampoco pudo cerrarlo: la restricción es del entorno, no del paso.
 
-> **Acción para A2**, que es donde vive el harness operativo:
+> **Acción en la primera sesión con red sin esa restricción:**
 > `composer require --dev larastan/larastan` y un `phpstan.neon` en nivel 5 como mínimo.
+> Es lo único que queda abierto de la Etapa A.
 
 ## Deuda conocida
 
 | Qué | Por qué importa | Cuándo se paga |
 |---|---|---|
-| Compuerta TYPECHECK sin herramienta | Es una de las seis del DoD nivel A | A2 |
+| Compuerta TYPECHECK sin herramienta | Es una de las seis del DoD nivel A. A2 no pudo cerrarla: `api.github.com` bloqueado | Primera sesión con red sin restricción |
+| El E2E de Playwright no corre en el hook de pre-commit | Solo el grupo `tenant-isolation` bloquea el commit; un E2E roto pasaría | Cuando exista CI, que es su sitio: 4 s por commit no se justifican |
 | Laravel 11.56 arrastra tres avisos de seguridad sin parche en su rama, uno **alto**: CVE-2026-48019, inyección CRLF en la regla de validación `email`. Corregido solo en 12.60+ | El paso B5 implementa autenticación y validará correos | B5: usar `email:rfc,strict` en vez de la regla `email` por defecto, o evaluar con ADR el salto a Laravel 12 |
 | `TenantContext::clear()` deja `app.tenant_id` en cadena vacía y ejecuta una consulta aunque nunca se hubiera fijado tenant | Una consulta por petición sin necesidad; ya no es un riesgo de corrección gracias al `NULLIF` | B2, al revisar el dominio |
 | `docker compose up` sin ejecutar | Es el entregable literal de A1 | Primera sesión con red sin restricción |
@@ -180,15 +234,27 @@ DOCUMENTATION, y sin verificar en TYPECHECK.** No se marca como cumplido lo que 
 
 ## Próximo paso concreto
 
-**Paso A2 de `PLAN.md`:** armar el harness operativo. Pest ya está instalado y el grupo
-`tenant-isolation` ya corre (13 pruebas), así que A2 se reduce a:
+**Paso B1 de `PLAN.md`:** migraciones, RLS y auditoría bloqueada. Aquí empieza el Slice 0 de
+verdad y el DoD sube a **nivel B**.
 
-1. Instalar Playwright y dejar un E2E mínimo contra la pantalla de estado.
-2. Conectar `scripts/pre-commit-tenant-isolation.sh` como hook de git y **verificar a mano
-   que bloquea de verdad** rompiendo una prueba de aislamiento a propósito. El script asume
-   `./vendor/bin/pest` desde la raíz del repositorio y la aplicación vive en `apps/platform`:
-   hay que ajustar la ruta o el hook no ejecutará nada.
-3. Añadir `TenantContext::assertRoleCannotBypassRls()` al arranque de la aplicación.
-   `FoundationCheck` ya lo envuelve; falta engancharlo a un `ServiceProvider` para que la
-   aplicación se niegue a levantar.
-4. Instalar `larastan/larastan` y cerrar la compuerta TYPECHECK (bloqueo 2).
+Antes de tocar nada, leer: `docs/architecture/core-entities.md`,
+`docs/architecture/data-classification.md` y `specs/identity/SPEC.md`.
+
+El trabajo de B1 es la **revisión crítica de las tres migraciones contra la especificación**,
+no volver a escribirlas. Ya corren en limpio y el grupo `tenant-isolation` está en verde, así
+que lo que queda es lo que ninguna prueba puede decidir por ti:
+
+1. Contrastar las 13 tablas y cada columna contra `core-entities.md` y la clasificación de
+   datos. La migración declara clasificaciones en comentarios (`// P3`); comprobar que
+   coinciden con `data-classification.md`.
+2. Verificar CA-01, CA-02, CA-03, CA-06, CA-11 y CA-12 del SPEC uno por uno.
+3. **Desconfiar del resto de la migración 000200.** El hallazgo del `NULLIF` (arriba) salió
+   de una prueba en rojo; puede haber más supuestos igual de frágiles que ninguna prueba
+   actual toca.
+4. Revisar la deuda de privilegios de la migración 000300 anotada en `## Deuda conocida`.
+5. Ejecutar `/tenant-test` y `/dod`.
+
+> **Nota de entorno para quien retome:** sin Docker, los servicios locales se levantan con
+> `pg_ctlcluster 16 main start` y `redis-server --daemonize yes`. La base `platform` y los
+> dos roles ya existen y sobreviven entre sesiones; `platform_test` se re-migra con
+> `composer test:prepare`.

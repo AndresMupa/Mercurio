@@ -16,6 +16,12 @@
 /apps/platform/storage/clinical
 /apps/platform/storage/logs/*.log
 
+# Artefactos de Playwright
+/apps/platform/test-results
+/apps/platform/playwright-report
+/apps/platform/blob-report
+/apps/platform/.playwright
+
 # Caché de herramientas
 .phpunit.result.cache
 /apps/platform/.phpunit.cache

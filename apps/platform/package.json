@@ -3,10 +3,12 @@
     "type": "module",
     "scripts": {
         "build": "vite build",
-        "dev": "vite"
+        "dev": "vite",
+        "e2e": "playwright test"
     },
     "devDependencies": {
         "@inertiajs/vue3": "^2.3.27",
+        "@playwright/test": "^1.62.1",
         "@vitejs/plugin-vue": "^5.2.4",
         "autoprefixer": "^10.4.20",
         "axios": "^1.7.4",
