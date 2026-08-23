@@ -19,7 +19,7 @@
 
 # ETAPA A · Preparación · ~2 días
 
-## [ ] A1 · Levantar el proyecto y la infraestructura
+## [x] A1 · Levantar el proyecto y la infraestructura
 
 **Objetivo:** un Laravel 11 corriendo con PostgreSQL 16 en Docker, con **dos roles de base de datos**
 separados: el dueño del esquema (migraciones) y el rol de la aplicación (runtime, sin `BYPASSRLS`).
@@ -35,6 +35,12 @@ separados: el dueño del esquema (migraciones) y el rol de la aplicación (runti
 
 **Entregable:** proyecto que levanta con `docker compose up` y responde en el navegador.
 **DoD:** nivel A.
+
+> Hecho el 23-ago-2026. DoD nivel A en verde salvo **TYPECHECK**, sin analizador estático
+> instalable en el entorno de la sesión. `docker compose up` quedó **sin ejecutar** por la
+> misma restricción de red; la sustancia del paso —los dos roles, las migraciones con el
+> dueño del esquema y la aplicación respondiendo— sí se verificó contra PostgreSQL 16 y
+> Redis locales. Detalle y acciones pendientes en `STATE.md`.
 
 ## [ ] A2 · Armar el harness operativo
 

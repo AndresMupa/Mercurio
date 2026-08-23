@@ -8,6 +8,7 @@
  */
 
 use App\Domains\Shared\TenantContext;
+use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
@@ -58,7 +59,7 @@ it('no permite insertar una fila con el tenant_id de otro', function () {
         'family_names' => 'Cruzado',
         'created_at' => now(),
         'updated_at' => now(),
-    ]))->toThrow(Illuminate\Database\QueryException::class);
+    ]))->toThrow(QueryException::class);
 });
 
 it('no filtra por relación indirecta: identidades, relaciones ni asignaciones', function () {
@@ -88,10 +89,10 @@ it('no permite modificar ni borrar eventos de auditoría', function () {
     ]);
 
     expect(fn () => DB::table('audit_events')->where('id', $id)->update(['action' => 'tampered']))
-        ->toThrow(Illuminate\Database\QueryException::class);
+        ->toThrow(QueryException::class);
 
     expect(fn () => DB::table('audit_events')->where('id', $id)->delete())
-        ->toThrow(Illuminate\Database\QueryException::class);
+        ->toThrow(QueryException::class);
 });
 
 it('no deja el tenant fijado entre peticiones en conexiones agrupadas', function () {
@@ -105,14 +106,14 @@ it('no deja el tenant fijado entre peticiones en conexiones agrupadas', function
 
 it('rechaza almacenar la identidad de un menor de edad', function () {
     expect(fn () => createPerson($this->tenantA, 'Menor', 'Prueba', now()->subYears(12)))
-        ->toThrow(Illuminate\Database\QueryException::class);
+        ->toThrow(QueryException::class);
 })->group('adr-0003');
 
 it('enrollment_snapshots no expone ninguna columna identificadora', function () {
     $columns = Schema::getColumnListing('enrollment_snapshots');
 
     $prohibidas = ['name', 'given_names', 'family_names', 'document_number',
-                   'birth_date', 'person_id', 'student_id', 'email'];
+        'birth_date', 'person_id', 'student_id', 'email'];
 
     expect(array_intersect($columns, $prohibidas))->toBeEmpty();
 })->group('adr-0003');

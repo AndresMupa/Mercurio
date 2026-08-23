@@ -1,0 +1,100 @@
+# Infraestructura de desarrollo del paso A1 (PLAN.md).
+#
+# Las credenciales de base de datos viven en un único sitio: el `.env` de la raíz, que
+# Compose interpola. Con ellas se CREAN los roles en postgres y con ellas se CONECTA la
+# aplicación, así que no pueden desincronizarse. `apps/platform/.env` aporta el resto de
+# la configuración de Laravel; Dotenv no pisa variables de entorno ya definidas, de modo
+# que lo que llega por `environment:` siempre gana.
+#
+# Los dos roles se crean en docker/postgres/initdb/010-roles.sql, que el entrypoint de
+# PostgreSQL ejecuta una sola vez, al inicializar el volumen. Si cambias ese archivo, el
+# volumen ya inicializado NO lo vuelve a ejecutar:
+#     docker compose down -v && docker compose up
+
+name: plataforma
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: ${DB_DATABASE:-platform}
+      POSTGRES_USER: ${POSTGRES_SUPERUSER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_SUPERUSER_PASSWORD:?define POSTGRES_SUPERUSER_PASSWORD en el .env de la raíz}
+      DB_OWNER_ROLE: ${DB_OWNER_ROLE:-platform_owner}
+      DB_OWNER_PASSWORD: ${DB_OWNER_PASSWORD:?define DB_OWNER_PASSWORD en el .env de la raíz}
+      DB_APP_ROLE: ${DB_APP_ROLE:-platform_app}
+      DB_APP_PASSWORD: ${DB_APP_PASSWORD:?define DB_APP_PASSWORD en el .env de la raíz}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./docker/postgres/initdb:/docker-entrypoint-initdb.d:ro
+    ports:
+      - "${DB_PORT_HOST:-5432}:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_SUPERUSER:-postgres} -d ${DB_DATABASE:-platform}"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  redis:
+    image: redis:7-alpine
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - redis-data:/data
+    ports:
+      - "${REDIS_PORT_HOST:-6379}:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  app:
+    build:
+      context: .
+      dockerfile: docker/app/Dockerfile
+    env_file:
+      # Opcional: `docker compose up` funciona recién clonado, solo con el .env
+      # de la raíz. Cuando existe, aporta APP_KEY y el resto de ajustes de Laravel.
+      - path: apps/platform/.env
+        required: false
+    environment:
+      DB_CONNECTION: pgsql
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_DATABASE: ${DB_DATABASE:-platform}
+      DB_APP_ROLE: ${DB_APP_ROLE:-platform_app}
+      DB_APP_PASSWORD: ${DB_APP_PASSWORD:?}
+      DB_OWNER_ROLE: ${DB_OWNER_ROLE:-platform_owner}
+      DB_OWNER_PASSWORD: ${DB_OWNER_PASSWORD:?}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+    volumes:
+      - ./apps/platform:/app
+    working_dir: /app
+    ports:
+      - "${APP_PORT:-8080}:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    # Las migraciones corren con el dueño del esquema; el servidor, con el rol de
+    # aplicación. check-foundation aborta el arranque si esa separación no se cumple.
+    command: >
+      sh -c "composer install --no-interaction &&
+             php artisan migrate --database=pgsql_owner --force &&
+             php artisan platform:check-foundation &&
+             php artisan serve --host=0.0.0.0 --port=8080"
+
+  vite:
+    image: node:22-alpine
+    working_dir: /app
+    volumes:
+      - ./apps/platform:/app
+    ports:
+      - "${VITE_PORT:-5173}:5173"
+    command: sh -c "npm install && npm run dev -- --host 0.0.0.0"
+
+volumes:
+  postgres-data:
+  redis-data:

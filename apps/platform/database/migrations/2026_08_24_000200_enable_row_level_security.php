@@ -10,8 +10,16 @@ use Illuminate\Support\Facades\DB;
  * FORCE es deliberado: sin él, el dueño de la tabla se salta la política y la garantía
  * dependería de con qué rol corre la aplicación.
  *
- * current_setting('app.tenant_id', true) devuelve NULL si no está fijado, y
- * `tenant_id = NULL` es NULL, no true. La política falla cerrada por diseño.
+ * NULLIF no es adorno. current_setting('app.tenant_id', true) solo devuelve NULL en una
+ * conexión que nunca fijó la variable; en cuanto una petición la fija, ni RESET ni
+ * set_config(..., NULL, ...) la devuelven a NULL: la dejan en cadena vacía. Sin NULLIF,
+ * ''::uuid lanza «invalid input syntax for type uuid» en toda consulta posterior de una
+ * conexión agrupada ya usada. Eso no es fallar cerrado, es fallar a gritos: no filtra,
+ * pero convierte cada petición sin tenant en un error 500.
+ *
+ * Con NULLIF la comparación queda `tenant_id = NULL`, que es NULL y no true, y la política
+ * devuelve cero filas. Eso sí es fallar cerrado, y es lo que comprueba la prueba
+ * «sigue aislando aunque el guard de aplicación esté desactivado».
  *
  * Requisito operativo: el rol de aplicación NO puede tener BYPASSRLS ni ser superusuario.
  * El arranque de la aplicación lo verifica y se niega a levantar si no se cumple.
@@ -31,8 +39,8 @@ return new class extends Migration
             DB::statement("ALTER TABLE {$table} FORCE ROW LEVEL SECURITY");
             DB::statement("
                 CREATE POLICY tenant_isolation ON {$table}
-                USING (tenant_id = current_setting('app.tenant_id', true)::uuid)
-                WITH CHECK (tenant_id = current_setting('app.tenant_id', true)::uuid)
+                USING (tenant_id = NULLIF(current_setting('app.tenant_id', true), '')::uuid)
+                WITH CHECK (tenant_id = NULLIF(current_setting('app.tenant_id', true), '')::uuid)
             ");
         }
 
@@ -52,11 +60,11 @@ return new class extends Migration
             \$\$ LANGUAGE plpgsql
         ");
 
-        DB::statement("
+        DB::statement('
             CREATE TRIGGER people_adults_only
             BEFORE INSERT OR UPDATE ON people
             FOR EACH ROW EXECUTE FUNCTION assert_person_is_adult()
-        ");
+        ');
     }
 
     public function down(): void

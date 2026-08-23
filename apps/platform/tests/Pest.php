@@ -2,9 +2,10 @@
 
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use Tests\Concerns\ResetsPlatformDatabase;
 use Tests\TestCase;
 
-uses(TestCase::class)->in('Feature');
+uses(TestCase::class, ResetsPlatformDatabase::class)->in('Feature');
 
 /**
  * Helpers de prueba. Crean datos directamente por consulta para no depender del dominio

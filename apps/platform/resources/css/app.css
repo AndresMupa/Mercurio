@@ -1,0 +1,42 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/*
+ * Tokens de docs/ux/design-system.md.
+ *
+ * Se declaran aquí desde el primer día para que las pantallas del Slice 0 (paso B7/B8)
+ * no nazcan sobre colores improvisados de Tailwind. Los componentes base del sistema
+ * de diseño NO se construyen todavía: eso es B8, después del lienzo aprobado en B7.
+ */
+@layer base {
+    :root {
+        --color-ground: #f6f7f9;
+        --color-surface: #ffffff;
+        --color-ink: #16191d;
+        --color-muted: #5b6470;
+        --color-rule: #dfe3e8;
+        --color-accent: #1d4ed8;
+        --color-ok: #12704a;
+        --color-warn: #8a5a00;
+        --color-critical: #a11b1b;
+        /* Reservado a superficies P4. No reutilizar en ningún otro contexto. */
+        --color-clinical: #5b21b6;
+    }
+
+    html {
+        background-color: var(--color-ground);
+        color: var(--color-ink);
+    }
+
+    /* Obligatorio en toda columna numérica (design-system.md § Tipografía). */
+    .tabular {
+        font-variant-numeric: tabular-nums;
+    }
+
+    /* Foco visible siempre — WCAG 2.2 AA. */
+    :focus-visible {
+        outline: 2px solid var(--color-accent);
+        outline-offset: 2px;
+    }
+}

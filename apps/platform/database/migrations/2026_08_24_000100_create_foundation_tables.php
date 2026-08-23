@@ -85,7 +85,7 @@ return new class extends Migration
             $t->date('birth_date')->nullable();        // P3
             $t->string('sex')->nullable();             // P3 — exigido por el Módulo III del C600
             $t->string('education_level')->nullable(); // P2
-            $t->string('teaching_statute')->nullable();// P2 — 2277/1979, 1278/2002, 804/1995
+            $t->string('teaching_statute')->nullable(); // P2 — 2277/1979, 1278/2002, 804/1995
             $t->string('teaching_grade')->nullable();  // P2 — alimenta el 3,2 % de tarifa
             $t->string('status')->default('active');
             $t->timestampsTz();

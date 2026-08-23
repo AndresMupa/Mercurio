@@ -1,9 +1,28 @@
-/vendor
-/node_modules
-/public/build
-/storage/*.key
-/storage/clinical
+# Secretos y entorno. `.env` de la raíz alimenta a docker compose; el de
+# apps/platform, a Laravel. Ninguno de los dos entra al repositorio.
 .env
 .env.*
 !.env.example
+
+# Dependencias y artefactos de construcción
+/apps/platform/vendor
+/apps/platform/node_modules
+/apps/platform/public/build
+/apps/platform/public/hot
+
+# Claves y almacenamiento local. /storage/clinical nunca se versiona:
+# es la superficie P4 del Clinical Vault (ARCHITECTURE.md).
+/apps/platform/storage/*.key
+/apps/platform/storage/clinical
+/apps/platform/storage/logs/*.log
+
+# Caché de herramientas
 .phpunit.result.cache
+/apps/platform/.phpunit.cache
+/apps/platform/.phpunit.result.cache
+
+# Editores
+/.idea
+/.vscode
+/.fleet
+/.zed
