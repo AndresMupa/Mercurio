@@ -1,0 +1,34 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(php artisan test*)",
+      "Bash(./vendor/bin/pest*)",
+      "Bash(npm run build*)",
+      "Bash(npm run lint*)",
+      "Bash(git status*)",
+      "Bash(git diff*)",
+      "Bash(git log*)"
+    ],
+    "deny": [
+      "Bash(php artisan migrate:fresh*)",
+      "Bash(php artisan db:wipe*)",
+      "Bash(git push --force*)",
+      "Read(./.env)",
+      "Read(./.env.*)",
+      "Read(./storage/clinical/**)"
+    ]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash(git commit*)",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "./scripts/pre-commit-tenant-isolation.sh"
+          }
+        ]
+      }
+    ]
+  }
+}

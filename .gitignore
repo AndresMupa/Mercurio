@@ -1,0 +1,9 @@
+/vendor
+/node_modules
+/public/build
+/storage/*.key
+/storage/clinical
+.env
+.env.*
+!.env.example
+.phpunit.result.cache
