@@ -1,10 +1,12 @@
 <?php
 
+use App\Domains\Shared\Application\AuditRecorder;
 use App\Http\Middleware\BindTenantToConnection;
 use App\Http\Middleware\HandleInertiaRequests;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use Illuminate\Support\Facades\Log;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -25,5 +27,21 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
-        //
+        /*
+         * Todo error deja `result = error` en la auditoría (paso B4).
+         *
+         * Se envuelve en su propio try: si auditar el error fallara —la base caída, que
+         * es justo cuando más errores hay— no puede tapar el error original ni provocar
+         * un bucle. Se degrada a log, nunca a silencio (§25 del harness).
+         */
+        $exceptions->report(function (Throwable $e): void {
+            try {
+                app(AuditRecorder::class)->recordError($e);
+            } catch (Throwable $fallo) {
+                Log::error('No se pudo auditar un error.', [
+                    'exception' => $e::class,
+                    'audit_failure' => $fallo::class,
+                ]);
+            }
+        });
     })->create();

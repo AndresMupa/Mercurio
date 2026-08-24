@@ -141,7 +141,7 @@ separados: el dueño del esquema (migraciones) y el rol de la aplicación (runti
 > matriz y se toma el máximo. Queda **el `rector` sin columna en la matriz**, lo que
 > bloquea su pantalla del B7. Detalle en `STATE.md`.
 
-## [ ] B4 · Auditoría append-only en el flujo real
+## [x] B4 · Auditoría append-only en el flujo real
 
 **Prompt:**
 > Implementa el registro de `AuditEvent` en toda operación relevante: lectura P3, escritura,
@@ -151,6 +151,15 @@ separados: el dueño del esquema (migraciones) y el rol de la aplicación (runti
 
 **Criterios:** CA-05, CA-06.
 **DoD:** nivel B.
+
+> Hecho el 23-ago-2026. 320 pruebas. Un solo punto de escritura de auditoría, con guardián
+> que **se niega** a escribir un contexto con campos P3 —comprobado en profundidad, no por
+> confianza—. Las escrituras registran nombres de campo, nunca valores. Encontrada y cerrada
+> **una fuga real de P3 hacia los ficheros de log**: el mensaje de `QueryException` trae la
+> consulta con los valores interpolados, así que un `INSERT` fallido sobre `people` escribía
+> nombre, sexo y fecha de nacimiento en un fichero que vive años. Verificado con sonda que
+> sin el redactor sí aparecían. Queda para B5 auditar lo que ocurre **antes** de resolver el
+> tenant. Detalle en `STATE.md`.
 
 ## [ ] B5 · Autenticación, MFA y roles con alcance
 

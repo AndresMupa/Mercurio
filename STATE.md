@@ -7,15 +7,16 @@
 
 ## Slice actual
 
-**Slice 0 — Foundation** · **A1, A2, B1, B2 y B3 completos**, siguiente **B4** de `PLAN.md`
+**Slice 0 — Foundation** · **A1, A2, B1, B2, B3 y B4 completos**, siguiente **B5** de `PLAN.md`
 `COMMERCIAL VALUE: —` (único slice estructural permitido) · `DoD LEVEL: B` · `DATA CLASSIFICATION: P3`
 
-Estado: esquema, dominio y autorización construidos. **305 pruebas, 420 aserciones.** Las
-216 celdas de la matriz de permisos tienen prueba propia, los nueve invariantes del SPEC
-también, y los siete de la matriz. **AUTHORIZATION pasa a verde**; el DoD de nivel B queda
-en verde salvo TYPECHECK, sin herramienta por una restricción de red del entorno. El harness
-operativo se cumple solo: un commit con una prueba de aislamiento rota **no pasa**,
-verificado a mano. El colegio ancla dio luz verde al piloto el 23 de agosto de 2026.
+Estado: esquema, dominio, autorización y auditoría construidos. **320 pruebas, 456
+aserciones.** Las 216 celdas de la matriz de permisos tienen prueba propia, los nueve
+invariantes del SPEC también, y los siete de la matriz. B4 encontró y cerró **una fuga real
+de datos P3 hacia los ficheros de log**. El DoD de nivel B queda en verde salvo TYPECHECK,
+sin herramienta por una restricción de red del entorno. El harness operativo se cumple solo:
+un commit con una prueba de aislamiento rota **no pasa**, verificado a mano. El colegio ancla
+dio luz verde al piloto el 23 de agosto de 2026.
 
 **Hay cuatro cosas esperando respuesta humana**, todas en `## Bloqueos`: si la aplicación
 debe poder borrar un tenant, dos huecos de la máquina de estados que B2 interpretó, y **qué
@@ -445,6 +446,86 @@ tenga la instancia delante y olvide pasar su `tenant_id`. Severidad baja, sin ca
 conocido para explotarlo, anotado en `## Deuda conocida`.
 
 
+## Paso B4 — hecho el 23-ago-2026
+
+Auditoría append-only en el flujo real. **320 pruebas, 456 aserciones.**
+
+### Lo construido
+
+| Qué | Dónde |
+|---|---|
+| Punto único de escritura de auditoría | `app/Domains/Shared/Application/AuditRecorder.php` |
+| Auditoría de escrituras en todo modelo del núcleo | `app/Domains/Shared/Domain/RecordsAuditTrail.php` |
+| Redacción de datos sensibles antes del disco | `.../Infrastructure/Logging/RedactSensitiveData.php` |
+| Correlación y tenant en cada línea de log | `.../Infrastructure/Logging/AddRequestContext.php` |
+| Log estructurado JSON en los canales reales | `config/logging.php` |
+| `result = error` ante cualquier excepción | `bootstrap/app.php` |
+| La prueba que exige el paso | `tests/Domains/Shared/AuditTrailTest.php` |
+
+### Había una fuga de P3 en los logs, y era real
+
+Comprobado, no razonado. Con una sonda desechable contra un canal sin redactor:
+
+```
+sin redactor, ¿aparece «Zzyzx»?     => SÍ APARECE
+sin redactor, ¿aparece la fecha?    => SÍ APARECE
+```
+
+El vector no es que alguien escriba `Log::info($persona->birth_date)`. Es la excepción de
+base de datos: el mensaje de `QueryException` trae **la consulta con los valores ya
+interpolados**, así que un `INSERT` fallido sobre `people` escribía el nombre, el sexo y la
+fecha de nacimiento en el fichero de log. Y los logs viven años, se copian a herramientas de
+observabilidad y los lee gente sin propósito declarado para ese dato. La regla 4 de
+`data-classification.md` lo prohíbe desde la Fase Cero; nada lo impedía.
+
+**Corregido** con un procesador de Monolog que redacta la cola `SQL: …` entera y las claves
+clasificadas P3/P4 del contexto. Se redacta el bloque completo en vez de intentar separar
+valores de estructura: se pierde comodidad al depurar —hay que ir a la traza para saber qué
+consulta era— y se gana que el log no sea una segunda copia de la base de datos sin control
+de acceso. Con cinco años de retención, el cambio compensa.
+
+La prueba correspondiente busca cuatro valores P3 deliberadamente raros —`Zzyzx`, `Qwghlm`,
+un documento y una fecha imposibles de teclear por casualidad— y falla si alguno aparece.
+Además comprueba que **no pasa por estar el log vacío**: exige que el `SQLSTATE` y el
+`correlation_id` sigan ahí.
+
+### Decisiones tomadas en este paso
+
+1. **Un solo punto de escritura.** Había dos sitios llamando a `AuditEvent::create()` con su
+   propia idea de qué campos rellenar. Dos se convierten en cinco, y entonces cada evento
+   trae lo que su autor recordó poner: la traza deja de ser comparable justo cuando hace
+   falta compararla. Ahora `AuditRecorder` garantiza correlación, actor y clasificación
+   siempre.
+2. **El contexto de auditoría no admite campos P3, y se comprueba.** El error que se comete
+   de verdad no es inventarse un campo raro: es volcar el modelo entero con `toArray()` o
+   añadir el documento «para tener más detalle». `AuditRecorder` recorre las claves en toda
+   su profundidad y **lanza** si alguna está clasificada P3 o P4. No filtra en silencio: un
+   evento que se escribe a medias sin que nadie se entere es peor que uno que falla.
+3. **Las escrituras registran nombres de campo, nunca valores.** `['fields' => ['birth_date']]`
+   dice que la fecha cambió; `['birth_date' => '1985-03-12']` sería copiar el dato. La
+   distinción —nombre como *valor* sí, como *clave* no— tiene su propia prueba.
+4. **Un error no guarda el mensaje de su excepción.** Por lo mismo que los logs: el mensaje
+   trae la consulta con los valores. Se guarda clase, fichero y línea, que es lo que sirve
+   para encontrar el fallo.
+5. **`Relationship` no audita ediciones genéricas.** Sus cambios de estado ya dejan eventos
+   con significado —`relationship.activated`, `relationship.ended`— desde las clases de
+   transición. Registrar además «relationships.updated» contaría dos veces el mismo hecho
+   con dos nombres. La creación sí se audita: no pasa por ninguna transición.
+6. **Auditar un error nunca puede tapar el error original.** El manejador va en su propio
+   `try`: si auditar falla —la base caída, que es cuando más errores hay— se degrada a log,
+   nunca a silencio.
+7. **La redacción no es configurable por entorno.** Un log sin redactar «solo en desarrollo»
+   acaba copiándose a un entorno compartido, y el fichero vive años.
+
+### Lo que sigue sin resolver
+
+`audit_events` no admite `INSERT` sin tenant resuelto: la RLS lo rechaza, y hace bien. Un
+login fallido ocurre **antes** de resolver el tenant, así que hoy ese suceso no se puede
+auditar. `recordError()` lo detecta y deja constancia en el log en vez de perderlo, pero eso
+es una mitigación, no la solución. **Es trabajo de B5**, que es quien decide cómo se resuelve
+el tenant antes de autenticar. Anotado en `## Deuda conocida`.
+
+
 ## Decisiones tomadas
 
 | Fecha | Decisión | Dónde |
@@ -564,9 +645,9 @@ la bandeja de alguien que no tiene permisos definidos.
 | Compuerta TYPECHECK sin herramienta | Es una de las seis del DoD nivel A. A2 no pudo cerrarla: `api.github.com` bloqueado | Primera sesión con red sin restricción |
 | En acciones de colección —listar, crear— no hay `resourceTenantId` que comparar y esa comprobación se salta | La protección por fila queda en el global scope y la RLS, que sí la cubren con 30 pruebas. Hueco teórico: una Policy con la instancia delante que olvide pasar su `tenant_id` | Cuando existan controladores reales (B8): que el contexto se construya desde el modelo y no a mano |
 | Solo hay Policies para Person, Relationship y AuditEvent | La matriz declara 17 recursos; el resto se autoriza llamando al `Authorizer` directamente, sin Policy | B8, al construir las pantallas que los usan |
-| OBSERVABILITY solo está a medias: hay correlación por petición, health check y comprobación de dependencias | Faltan logs estructurados, métricas, tracing y monitoreo de colas (§21 del harness). Es compuerta del DoD nivel B | Antes de B9, que es donde se cierra el DoD del slice |
+| OBSERVABILITY: hay correlación por petición, tenant en cada línea, logs estructurados JSON, health check y comprobación de dependencias. **Faltan métricas, tracing distribuido y monitoreo de colas** (§21 del harness) | Es compuerta del DoD nivel B | Antes de B9, que es donde se cierra el DoD del slice |
 | El invariante 5 lo sostienen el modelo y el repositorio, no la base | `platform_app` conserva `DELETE` sobre `relationships`. `audit_events` sí lo tiene revocado en base | Considerar revocarlo también aquí; encaja con la decisión pendiente del bloqueo 3 |
-| `audit_events` no admite `INSERT` sin tenant resuelto: la RLS lo rechaza | Un login fallido ocurre **antes** de resolver el tenant, y CA-04 exige auditar la denegación. Comprobado: el `INSERT` sin contexto falla | B4/B5: resolver el tenant desde la petición antes de autenticar, o abrir una vía de auditoría de plataforma |
+| `audit_events` no admite `INSERT` sin tenant resuelto: la RLS lo rechaza | Un login fallido ocurre **antes** de resolver el tenant, y CA-04 exige auditar la denegación. B4 mitigó: `recordError()` lo detecta y deja constancia en el log en vez de perder el suceso, pero eso no es auditarlo | **B5**, que es quien decide cómo se resuelve el tenant antes de autenticar |
 | La RLS sobre `tenants` bloquea también la resolución de tenant por `slug` antes del login | B5 necesita encontrar el tenant para poder autenticar dentro de él | B5: resolver por host/slug y fijar el contexto antes de autenticar; si hace falta lectura previa, función `SECURITY DEFINER` que devuelva un solo id y no permita enumerar |
 | `enrollment_snapshots` no tiene identificadores, pero la combinación sede + año + grado + jornada + sexo + rango de edad + condición con `headcount` bajo es cuasi-identificadora | Dentro del tenant es aceptable —el colegio ya conoce a sus estudiantes—; fuera del tenant no | C5: la supresión de celdas con `headcount < 5` en exportaciones ya está prevista en `core-entities.md` |
 | El E2E de Playwright no corre en el hook de pre-commit | Solo el grupo `tenant-isolation` bloquea el commit; un E2E roto pasaría | Cuando exista CI, que es su sitio: 4 s por commit no se justifican |
@@ -586,36 +667,45 @@ la bandeja de alguien que no tiene permisos definidos.
 
 ## Próximo paso concreto
 
-**Paso B4 de `PLAN.md`:** auditoría append-only en el flujo real.
+**Paso B5 de `PLAN.md`:** autenticación, MFA y roles con alcance.
 
-Lo que pide el paso: registrar `AuditEvent` en **toda** operación relevante —lectura P3,
-escritura, cambio de estado, denegación y error— con actor, acción, recurso, propósito,
-clasificación, correlation id y resultado. Nunca contenido P3 dentro de `context`. Y una
-prueba que falle si algún campo P3 aparece en logs o en el payload de auditoría.
+Lo que pide el paso: MFA obligatorio para todo rol con techo P3, sesiones seguras, rate
+limiting, protección contra enumeración de usuarios, `role_assignments` con alcance y
+vigencia, y que cerrar una relación revoque el acceso en la siguiente petición sin cerrar
+sesión.
 
-Lo que ya está hecho y B4 no tiene que rehacer:
+**Buena parte ya está hecha y B5 no tiene que rehacerla:**
 
-- **Cambios de estado** — las transiciones de `relationships` escriben su evento (B2).
-- **Lecturas P3 y denegaciones** — el `Authorizer` las registra con propósito, actor,
-  clasificación y correlación (B3). CA-04 y CA-05 tienen prueba.
-- **Correlación** — `CorrelationId` da un identificador por petición, fijado por el
-  middleware y aceptando `X-Correlation-Id`.
-- **Que no se cuele P3 en `context`** — ya hay dos pruebas, una en B2 y otra en B3.
+- `role_assignments` con alcance y vigencia: implementado y probado en B2/B3.
+  `RoleAssignment::isEffectiveOn()` y el scope `effective()` resuelven CA-08.
+- **CA-07 ya está resuelto** en B3: la relación laboral vigente es condición de acceso,
+  resuelta en cada petición y nunca cacheada. Cerrar la relación corta el acceso en la
+  siguiente petición.
+- `RoleKey::classificationCeiling()` ya dice qué roles tienen techo P3, que es exactamente
+  el conjunto al que CA-09 exige MFA.
+- El modelo `User` existe con `mfa_enabled`, `mfa_secret` cifrado y `password` con cast
+  `hashed`. `config/auth.php` ya apunta a `App\Domains\Identity\Domain\User`.
 
-Lo que **falta** y es el trabajo de B4:
+**Lo que falta y es el trabajo de B5:**
 
-1. **Escrituras**: crear y editar personas, identidades y asignaciones no dejan rastro.
-   Solo lo dejan los cambios de estado de relación.
-2. **Errores**: no se registra `result = error` en ningún sitio.
-3. **Logs estructurados**: no existen, y la prueba que pide el paso —que ningún campo P3
-   aparezca en logs— necesita que existan para poder comprobarlos.
-4. **`audit_events` no admite `INSERT` sin tenant resuelto**, y un login fallido ocurre
-   antes de resolverlo (ver `## Deuda conocida`). B4 o B5 tienen que decidir la vía para
-   auditar lo que pasa antes de saber el tenant.
+1. El flujo de autenticación en sí, con segundo factor obligatorio para techo P3 (CA-09).
+2. Rate limiting y protección contra enumeración de usuarios: que «este correo no existe» y
+   «la contraseña no coincide» sean indistinguibles desde fuera.
+3. Sesiones seguras y su invalidación.
+4. **Resolver el tenant antes de autenticar.** Es el nudo del paso, y bloquea dos cosas
+   anotadas en `## Deuda conocida`: hoy `users` está bajo RLS, así que buscar al usuario por
+   correo antes de tener tenant devuelve cero filas; y `audit_events` no admite `INSERT` sin
+   tenant, así que un login fallido no se puede auditar. Lo natural es resolver el tenant
+   por host o slug, fijar el contexto y autenticar dentro de él; si hiciera falta leer
+   `tenants` antes, una función `SECURITY DEFINER` que devuelva un solo id sin permitir
+   enumerar.
+5. **Ojo con la deuda de Laravel 11**: CVE-2026-48019, inyección CRLF en la regla de
+   validación `email`. B5 valida correos. Usar `email:rfc,strict` en vez de la regla por
+   defecto, o evaluar con ADR el salto a Laravel 12.
 
 > **Nota de entorno para quien retome:** sin Docker, los servicios locales se levantan con
 > `pg_ctlcluster 16 main start` y `redis-server --daemonize yes`. La base `platform` y los dos
 > roles ya existen y sobreviven entre sesiones; `platform_test` se re-migra con
 > `composer test:prepare`. Los gates: `composer lint`, `composer test`, `composer test:tenant`,
 > `npm run e2e` (con `PLAYWRIGHT_CHROMIUM_PATH=/opt/pw-browsers/chromium` en este entorno).
-> La suite tarda ~35 s: las 216 celdas de la matriz pesan.
+> La suite tarda ~35 s.

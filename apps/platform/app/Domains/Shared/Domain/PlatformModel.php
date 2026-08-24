@@ -8,13 +8,15 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 
 /**
- * Base de todo modelo del núcleo: clave uuid y aislamiento por tenant desde el primer
- * momento, para que ningún modelo nuevo pueda nacer fuera de la primera capa por olvido.
+ * Base de todo modelo del núcleo: clave uuid, aislamiento por tenant y auditoría de
+ * escrituras desde el primer momento, para que ningún modelo nuevo pueda nacer fuera de
+ * esas garantías por olvido. Quien añada un modelo no tiene que acordarse de nada.
  */
 abstract class PlatformModel extends Model
 {
     use BelongsToTenant;
     use HasUuids;
+    use RecordsAuditTrail;
 
     public $incrementing = false;
 

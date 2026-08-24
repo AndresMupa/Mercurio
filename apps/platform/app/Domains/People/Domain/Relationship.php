@@ -36,6 +36,18 @@ final class Relationship extends PlatformModel
         ];
     }
 
+    /**
+     * Las ediciones no se auditan genéricamente: cada cambio de estado ya deja su evento
+     * con significado —`relationship.activated`, `relationship.ended`— desde las clases de
+     * transición. Registrar además «relationships.updated» contaría dos veces el mismo
+     * hecho con dos nombres, y quien lea la traza tendría que saber cuál de los dos mirar.
+     * La creación sí se audita: no pasa por ninguna transición.
+     */
+    protected static function auditsUpdates(): bool
+    {
+        return false;
+    }
+
     protected static function booted(): void
     {
         // Invariante 5 · SPEC, máquina de estados: «cualquiera → borrado: prohibido».

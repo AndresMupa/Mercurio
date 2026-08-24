@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domains\Identity\Domain;
 
+use App\Domains\Shared\Domain\RecordsAuditTrail;
 use App\Domains\Shared\TenantContext;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
@@ -20,6 +21,7 @@ use Illuminate\Database\Eloquent\Model;
 final class Tenant extends Model
 {
     use HasUuids;
+    use RecordsAuditTrail;
 
     public $incrementing = false;
 

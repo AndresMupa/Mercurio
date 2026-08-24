@@ -7,8 +7,8 @@ namespace App\Domains\People\Domain\Transitions;
 use App\Domains\People\Domain\Exceptions\InvalidRelationshipTransition;
 use App\Domains\People\Domain\Relationship;
 use App\Domains\People\Domain\RelationshipStatus;
-use App\Domains\Shared\CorrelationId;
-use App\Domains\Shared\Domain\AuditEvent;
+use App\Domains\Shared\Application\AuditRecorder;
+use App\Domains\Shared\Domain\DataClassification;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -57,20 +57,18 @@ abstract class RelationshipTransition
 
             // Regla 4 de CLAUDE.md: ninguna operación relevante sin AuditEvent.
             // Un cambio de estado de una relación laboral lo es.
-            AuditEvent::create([
-                'action' => $this->auditAction(),
-                'resource_type' => 'relationships',
-                'resource_id' => (string) $relationship->getKey(),
-                'data_classification' => 'P2',
-                'correlation_id' => $context['correlation_id'] ?? CorrelationId::current(),
-                'actor_user_id' => $context['actor_user_id'] ?? null,
-                'actor_label' => $context['actor_label'] ?? null,
-                'purpose' => $context['purpose'] ?? null,
-                'result' => 'allowed',
-                'source' => $context['source'] ?? 'web',
-                'context' => $this->auditContext($relationship, $context),
-                'occurred_at' => now(),
-            ]);
+            app(AuditRecorder::class)->record(
+                action: $this->auditAction(),
+                resourceType: 'relationships',
+                resourceId: (string) $relationship->getKey(),
+                result: AuditRecorder::ALLOWED,
+                classification: DataClassification::P2,
+                purpose: $context['purpose'] ?? null,
+                context: $this->auditContext($relationship, $context),
+                actorUserId: $context['actor_user_id'] ?? null,
+                actorLabel: $context['actor_label'] ?? null,
+                source: $context['source'] ?? 'web',
+            );
 
             return $relationship;
         });

@@ -11,8 +11,7 @@ use App\Domains\Identity\Domain\Authorization\PermissionMatrix;
 use App\Domains\Identity\Domain\Authorization\RoleKey;
 use App\Domains\Identity\Domain\RoleAssignment;
 use App\Domains\People\Domain\Relationship;
-use App\Domains\Shared\CorrelationId;
-use App\Domains\Shared\Domain\AuditEvent;
+use App\Domains\Shared\Application\AuditRecorder;
 use App\Domains\Shared\Domain\DataClassification;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
@@ -32,6 +31,10 @@ use Illuminate\Support\Collection;
  */
 final class Authorizer
 {
+    // Un solo punto de escritura de auditoría en todo el sistema (B4): así ningún
+    // evento depende de que su autor recordara qué campos rellenar.
+    public function __construct(private readonly AuditRecorder $recorder) {}
+
     public function authorize(AuthorizationContext $context): AuthorizationDecision
     {
         $decision = $this->decide($context);
@@ -284,22 +287,19 @@ final class Authorizer
             return;
         }
 
-        AuditEvent::create([
-            'action' => "{$context->resource}.{$context->action}",
-            'resource_type' => $context->resource,
-            'resource_id' => $context->resourcePersonId,
-            'purpose' => $context->purpose?->value,
-            'data_classification' => $classification,
-            'correlation_id' => CorrelationId::current(),
-            'actor_user_id' => $context->user->getKey(),
-            'result' => $decision->allowed ? 'allowed' : 'denied',
-            'source' => 'web',
+        $this->recorder->record(
+            action: "{$context->resource}.{$context->action}",
+            resourceType: $context->resource,
+            resourceId: $context->resourcePersonId,
+            result: $decision->allowed ? AuditRecorder::ALLOWED : AuditRecorder::DENIED,
+            classification: $classification,
+            purpose: $context->purpose,
             // Nunca el dato: solo la regla que decidió. `reason` está escrito para eso.
-            'context' => array_filter([
+            context: array_filter([
                 'rule' => $decision->rule,
                 'reason' => $decision->reason,
             ]),
-            'occurred_at' => now(),
-        ]);
+            actorUserId: (string) $context->user->getKey(),
+        );
     }
 }

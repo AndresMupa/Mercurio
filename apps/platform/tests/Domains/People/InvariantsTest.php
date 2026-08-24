@@ -273,7 +273,15 @@ it('cada transición deja su propio AuditEvent', function () {
     $acciones = AuditEvent::where('resource_id', (string) $relacion->getKey())
         ->orderBy('id')->pluck('action')->all();
 
-    expect($acciones)->toBe(['relationship.activated', 'relationship.ended']);
+    // `relationships.created` lo añade B4: crear es una escritura y deja rastro. Los
+    // otros dos son los eventos con significado de dominio que ponen las transiciones.
+    // Que convivan es deliberado: uno dice qué cambió, los otros qué significó el cambio,
+    // y comparten correlation_id, así que se leen juntos.
+    expect($acciones)->toBe([
+        'relationships.created',
+        'relationship.activated',
+        'relationship.ended',
+    ]);
 });
 
 it('la auditoría de una transición no guarda ningún dato P3', function () {

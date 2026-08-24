@@ -6,6 +6,7 @@ namespace App\Domains\Identity\Domain;
 
 use App\Domains\People\Domain\Person;
 use App\Domains\Shared\Domain\BelongsToTenant;
+use App\Domains\Shared\Domain\RecordsAuditTrail;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -19,6 +20,7 @@ final class User extends Authenticatable
 {
     use BelongsToTenant;
     use HasUuids;
+    use RecordsAuditTrail;
 
     public $incrementing = false;
 

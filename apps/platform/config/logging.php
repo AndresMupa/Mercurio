@@ -1,5 +1,6 @@
 <?php
 
+use App\Domains\Shared\Infrastructure\Logging\ConfigureStructuredLogging;
 use Monolog\Handler\NullHandler;
 use Monolog\Handler\StreamHandler;
 use Monolog\Handler\SyslogUdpHandler;
@@ -58,11 +59,20 @@ return [
             'ignore_exceptions' => false,
         ],
 
+        /*
+         * Canal por defecto de la plataforma: JSON por línea, con correlation_id y
+         * tenant_id, y con los datos sensibles redactados antes de tocar el disco.
+         *
+         * El `tap` no es opcional ni configurable por entorno a propósito. Un log sin
+         * redactar en desarrollo acaba copiándose a un entorno compartido, y el fichero
+         * vive años. Ver RedactSensitiveData.
+         */
         'single' => [
             'driver' => 'single',
             'path' => storage_path('logs/laravel.log'),
             'level' => env('LOG_LEVEL', 'debug'),
             'replace_placeholders' => true,
+            'tap' => [ConfigureStructuredLogging::class],
         ],
 
         'daily' => [
@@ -71,6 +81,7 @@ return [
             'level' => env('LOG_LEVEL', 'debug'),
             'days' => env('LOG_DAILY_DAYS', 14),
             'replace_placeholders' => true,
+            'tap' => [ConfigureStructuredLogging::class],
         ],
 
         'slack' => [
