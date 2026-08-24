@@ -118,7 +118,7 @@ separados: el dueño del esquema (migraciones) y el rol de la aplicación (runti
 > correlacionaba nada. Quedan **dos huecos de la máquina de estados del SPEC** interpretados
 > por B2 y pendientes de confirmación. Detalle en `STATE.md`.
 
-## [ ] B3 · Autorización RBAC + ABAC con propósito
+## [x] B3 · Autorización RBAC + ABAC con propósito
 
 **Objetivo:** que el rol nunca decida solo y que toda lectura P3 declare para qué.
 
@@ -131,6 +131,15 @@ separados: el dueño del esquema (migraciones) y el rol de la aplicación (runti
 
 **Criterios:** CA-04, CA-05, CA-07, CA-08.
 **DoD:** nivel B.
+
+> Hecho el 23-ago-2026. 216 celdas de la matriz con una prueba cada una, transcritas a mano
+> del documento para que no se comprueben contra sí mismas; los siete invariantes de la
+> matriz y los cuatro criterios. 305 pruebas en total. **CA-07 no estaba implementado** y
+> este paso lo descubrió: la relación laboral vigente pasa a ser condición de acceso.
+> `/threat` encontró un fallo abierto —la clasificación la ponía el llamador, así que
+> omitirla saltaba el techo del rol—, corregido en el mismo paso: ahora la declara la
+> matriz y se toma el máximo. Queda **el `rector` sin columna en la matriz**, lo que
+> bloquea su pantalla del B7. Detalle en `STATE.md`.
 
 ## [ ] B4 · Auditoría append-only en el flujo real
 

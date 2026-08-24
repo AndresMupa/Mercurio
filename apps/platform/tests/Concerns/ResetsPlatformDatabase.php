@@ -46,5 +46,12 @@ trait ResetsPlatformDatabase
     protected function tearDownResetsPlatformDatabase(): void
     {
         TenantContext::clear();
+
+        // Cada prueba reconstruye la aplicación, y con ella el gestor de conexiones. Sin
+        // cerrarlas explícitamente, las anteriores quedan abiertas contra PostgreSQL: una
+        // suite con doscientos casos agota `max_connections` y falla por «remaining
+        // connection slots are reserved», que no tiene nada que ver con lo que se probaba.
+        DB::disconnect('pgsql');
+        DB::disconnect('pgsql_owner');
     }
 }

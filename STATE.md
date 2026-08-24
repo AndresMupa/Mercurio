@@ -7,18 +7,20 @@
 
 ## Slice actual
 
-**Slice 0 — Foundation** · **A1, A2, B1 y B2 completos**, siguiente **B3** de `PLAN.md`
+**Slice 0 — Foundation** · **A1, A2, B1, B2 y B3 completos**, siguiente **B4** de `PLAN.md`
 `COMMERCIAL VALUE: —` (único slice estructural permitido) · `DoD LEVEL: B` · `DATA CLASSIFICATION: P3`
 
-Estado: esquema y dominio construidos. 55 pruebas, 143 aserciones. Los nueve invariantes del
-SPEC tienen prueba propia. El DoD de nivel B está en verde salvo AUTHORIZATION —que es el
-paso B3— y TYPECHECK, sin herramienta por una restricción de red del entorno. El harness
+Estado: esquema, dominio y autorización construidos. **305 pruebas, 420 aserciones.** Las
+216 celdas de la matriz de permisos tienen prueba propia, los nueve invariantes del SPEC
+también, y los siete de la matriz. **AUTHORIZATION pasa a verde**; el DoD de nivel B queda
+en verde salvo TYPECHECK, sin herramienta por una restricción de red del entorno. El harness
 operativo se cumple solo: un commit con una prueba de aislamiento rota **no pasa**,
 verificado a mano. El colegio ancla dio luz verde al piloto el 23 de agosto de 2026.
 
-**Hay tres cosas esperando respuesta humana**, todas en `## Bloqueos`: si la aplicación debe
-poder borrar un tenant, y dos huecos de la máquina de estados del SPEC que B2 tuvo que
-interpretar.
+**Hay cuatro cosas esperando respuesta humana**, todas en `## Bloqueos`: si la aplicación
+debe poder borrar un tenant, dos huecos de la máquina de estados que B2 interpretó, y **qué
+permisos le corresponden al `rector`**, que la matriz nombra como rol pero deja sin columna
+—y eso bloquea su pantalla del paso B7—.
 
 > **`PLAN.md` es el documento que se ejecuta.** Un paso por sesión, en orden, marcando la casilla
 > y haciendo commit al terminar cada uno.
@@ -350,6 +352,99 @@ slice se cierra en B9. Lo que sí queda cerrado es el paso B2. Ninguna prueba se
 ni se bajó de nivel.
 
 
+## Paso B3 — hecho el 23-ago-2026
+
+Autorización RBAC + ABAC con propósito. Era la compuerta que estaba en rojo en el DoD.
+
+### Lo construido
+
+| Qué | Dónde |
+|---|---|
+| Contexto completo de decisión | `app/Domains/Identity/Domain/Authorization/AuthorizationContext.php` |
+| Matriz recurso × acción × rol **como dato** | `.../Authorization/PermissionMatrix.php` |
+| Propósito como lista cerrada | `.../Authorization/Purpose.php` |
+| Roles con alcance y techo de clasificación | `.../Authorization/RoleKey.php` |
+| Decisión con motivo y regla | `.../Authorization/AuthorizationDecision.php` |
+| Punto único de decisión, con las seis condiciones ABAC | `app/Domains/Identity/Application/Authorizer.php` |
+| Policies que lo consumen | `app/Domains/{People,Identity}/Interfaces/Policies/` |
+| 216 celdas de la matriz, una prueba cada una | `tests/Domains/Identity/PermissionMatrixTest.php` |
+| Los siete invariantes + CA-04, CA-05, CA-07, CA-08 | `tests/Domains/Identity/AuthorizationInvariantsTest.php` |
+
+**305 pruebas, 420 aserciones.** El grupo `tenant-isolation` pasa de 26 a 30.
+
+### Decisiones tomadas en este paso
+
+1. **La matriz es dato, no código.** No hay un solo `if` sobre nombres de rol fuera de esa
+   tabla. Cambiar quién puede hacer qué se hace editando una estructura que se lee al lado
+   del documento y se coteja de un vistazo.
+2. **Falla cerrada en todo.** Un recurso que la matriz no declara se deniega
+   (`matrix.undeclared`); un rol sin columna no obtiene nada. Un recurso nuevo no nace
+   accesible por descuido.
+3. **El tenant se comprueba antes que el rol.** Un acierto de rol sobre un recurso de otro
+   tenant no es un permiso concedido: es una fuga. Hay prueba de que la regla que deniega
+   es `abac.tenant` y no la de la matriz.
+4. **La prueba de la matriz está transcrita a mano del documento.** Si se generara desde
+   `PermissionMatrix`, compararía la implementación consigo misma y pasaría siempre. Como
+   está, una discrepancia entre documento y código sale en rojo.
+5. **`✓ˢ` exige que el contexto diga de quién es el recurso, también al listar.** La
+   alternativa —permitir el listado y confiar en que la consulta filtre— falla abierta:
+   quien olvide filtrar enseña la planta entera. Así, olvidarlo deniega.
+6. **La denegación conserva su regla.** Una primera versión aplanaba todas las
+   denegaciones a `matrix.deny`, con lo que «te falta el propósito» y «tu rol no llega a
+   P3» quedaban indistinguibles en la auditoría. Corregido: la decisión viaja entera.
+
+### CA-07 no estaba implementado y este paso lo descubrió
+
+`role_assignments` vigente no basta: si la persona ya no trabaja aquí, el acceso tiene que
+cesar. La primera versión del `Authorizer` solo miraba roles, así que un exempleado con su
+rol aún asignado seguía entrando.
+
+Corregido: **la relación laboral vigente es condición de acceso**, resuelta en cada
+petición y nunca cacheada ni guardada en sesión. Cerrar la relación corta el acceso en la
+siguiente petición sin cerrar sesión, que es literalmente lo que pide CA-07. Los usuarios
+sin persona asociada —cuentas de plataforma— no pasan por esta puerta: no tienen relación
+laboral que cerrar.
+
+### `/threat` — hallazgo serio, encontrado y cerrado dentro del paso
+
+**La clasificación del dato llegaba desde el llamador.** Comprobado con una sonda, no
+razonado: un `auditor` con techo P2 pidiendo un recurso P3 era **denegado si se declaraba
+la clasificación y permitido si se omitía**. Un parámetro olvidado desactivaba la
+comprobación del techo del rol, y además la lectura P3 no quedaba auditada.
+
+En el Slice 0 el daño real era limitado —la matriz ya deniega a los roles de techo P2 los
+recursos P3 concretos que hoy existen—, pero la puerta quedaba abierta para el Slice 4 y
+el 5, donde entra P4 y el Clinical Vault.
+
+**Corregido:** la clasificación la declara la matriz, junto al permiso, como hace el
+documento. Si el llamador aporta una, se toma **el máximo**, nunca la recibida: nadie puede
+rebajar la sensibilidad de un recurso pasando un nivel más bajo o ninguno. Tres pruebas de
+regresión, incluida una que comprueba que la traza sigue diciendo P3 aunque el llamador
+diga P1.
+
+No se detuvo el paso por §26: era código sin desplegar, se cerró en el mismo paso y quedó
+cubierto por pruebas.
+
+### `/threat` — el resto del análisis
+
+| Frente | Resultado |
+|---|---|
+| **Cross-tenant** | El tenant se comprueba primero y hay prueba de que ni el `owner` cruza. Riesgo residual aceptado abajo. |
+| **Escalamiento a P4** | Ningún rol de la matriz alcanza P4, ni el `owner`, ni declarándolo. Con prueba, antes de que el Slice 5 exista. |
+| **Fuga por canal lateral** | El `context` de auditoría solo lleva regla y motivo; hay prueba de que no aparecen nombres, documentos ni fechas de nacimiento. `password` y `mfa_secret` están en `$hidden`. |
+| **Datos de menores** | Sin caminos nuevos: sigue sostenido por el trigger de base de datos. |
+| **Integridad de auditoría** | Tres capas: privilegios de PostgreSQL, eventos del modelo y Policy. Ninguna de las tres se puede desactivar desde las otras. |
+| **Error humano** | Cada equivocación tiene su regla distinta en la traza —`abac.tenant`, `abac.self`, `abac.alcance`, `abac.vigencia`—, que es lo que permite diagnosticar sin reproducir. |
+| **Retención** | B3 no borra nada. |
+
+**Riesgo residual aceptado:** cuando la acción es de colección —listar, crear— no hay
+`resourceTenantId` que comparar, y esa comprobación se salta. La protección por fila
+descansa entonces en el global scope y la RLS, que hacen imposible cargar una fila ajena;
+30 pruebas del grupo `tenant-isolation` lo cubren. Queda un hueco teórico: una Policy que
+tenga la instancia delante y olvide pasar su `tenant_id`. Severidad baja, sin camino
+conocido para explotarlo, anotado en `## Deuda conocida`.
+
+
 ## Decisiones tomadas
 
 | Fecha | Decisión | Dónde |
@@ -444,11 +539,31 @@ Las dos son interpretaciones defendibles, pero son **mías, no del SPEC**. Hace 
 confirmarlas o corregirlas —y en su caso añadir las filas a la tabla del SPEC con actor y
 precondiciones— antes de B9.
 
+### 5. `rector` es un rol sin permisos — y bloquea su pantalla del paso B7
+
+`docs/architecture/permissions.md` lo lista en «Roles y alcance» con alcance
+`legal_entity` y techo P3, pero **no tiene columna en la matriz recurso × acción**. No hay
+ninguna celda que diga qué puede hacer.
+
+B3 no le inventa permisos: la matriz falla cerrada, así que hoy el rector no puede hacer
+nada. Hay prueba que lo deja constante y visible, no como un olvido silencioso.
+
+Esto importa pronto: `PLAN.md` B7 pide diseñar «MY WORK del rector», y no se puede diseñar
+la bandeja de alguien que no tiene permisos definidos.
+
+- La descripción dice «alias de dirección», y comparte alcance y techo con `admin_rrhh`.
+  La lectura más probable es que sea liderazgo y no administración de RR. HH.: vería
+  personas, relaciones, matrícula y reportes, pero no gestionaría usuarios ni el DPA.
+- **Es una suposición mía y no la implemento.** Hace falta que alguien añada la columna al
+  documento antes de B7.
+
 ## Deuda conocida
 
 | Qué | Por qué importa | Cuándo se paga |
 |---|---|---|
 | Compuerta TYPECHECK sin herramienta | Es una de las seis del DoD nivel A. A2 no pudo cerrarla: `api.github.com` bloqueado | Primera sesión con red sin restricción |
+| En acciones de colección —listar, crear— no hay `resourceTenantId` que comparar y esa comprobación se salta | La protección por fila queda en el global scope y la RLS, que sí la cubren con 30 pruebas. Hueco teórico: una Policy con la instancia delante que olvide pasar su `tenant_id` | Cuando existan controladores reales (B8): que el contexto se construya desde el modelo y no a mano |
+| Solo hay Policies para Person, Relationship y AuditEvent | La matriz declara 17 recursos; el resto se autoriza llamando al `Authorizer` directamente, sin Policy | B8, al construir las pantallas que los usan |
 | OBSERVABILITY solo está a medias: hay correlación por petición, health check y comprobación de dependencias | Faltan logs estructurados, métricas, tracing y monitoreo de colas (§21 del harness). Es compuerta del DoD nivel B | Antes de B9, que es donde se cierra el DoD del slice |
 | El invariante 5 lo sostienen el modelo y el repositorio, no la base | `platform_app` conserva `DELETE` sobre `relationships`. `audit_events` sí lo tiene revocado en base | Considerar revocarlo también aquí; encaja con la decisión pendiente del bloqueo 3 |
 | `audit_events` no admite `INSERT` sin tenant resuelto: la RLS lo rechaza | Un login fallido ocurre **antes** de resolver el tenant, y CA-04 exige auditar la denegación. Comprobado: el `INSERT` sin contexto falla | B4/B5: resolver el tenant desde la petición antes de autenticar, o abrir una vía de auditoría de plataforma |
@@ -471,34 +586,36 @@ precondiciones— antes de B9.
 
 ## Próximo paso concreto
 
-**Paso B3 de `PLAN.md`:** autorización RBAC + ABAC con propósito. Es la compuerta que hoy
-está en rojo en el DoD del slice.
+**Paso B4 de `PLAN.md`:** auditoría append-only en el flujo real.
 
-Antes de tocar nada, leer `docs/architecture/permissions.md`.
+Lo que pide el paso: registrar `AuditEvent` en **toda** operación relevante —lectura P3,
+escritura, cambio de estado, denegación y error— con actor, acción, recurso, propósito,
+clasificación, correlation id y resultado. Nunca contenido P3 dentro de `context`. Y una
+prueba que falle si algún campo P3 aparece en logs o en el payload de auditoría.
 
-Lo que pide el paso:
+Lo que ya está hecho y B4 no tiene que rehacer:
 
-1. `AuthorizationContext` con user, tenant, legalEntity, site, relationship, resource,
-   action, purpose y dataClassification, y las Policies de Laravel que lo consumen.
-2. `purpose` obligatorio para P3, validado contra una lista cerrada.
-3. Una prueba de autorización **por cada celda** de la matriz, incluidas las denegaciones.
-4. Verificar los siete invariantes de esa matriz.
-5. Ejecutar `/threat` sobre el resultado.
+- **Cambios de estado** — las transiciones de `relationships` escriben su evento (B2).
+- **Lecturas P3 y denegaciones** — el `Authorizer` las registra con propósito, actor,
+  clasificación y correlación (B3). CA-04 y CA-05 tienen prueba.
+- **Correlación** — `CorrelationId` da un identificador por petición, fijado por el
+  middleware y aceptando `X-Correlation-Id`.
+- **Que no se cuele P3 en `context`** — ya hay dos pruebas, una en B2 y otra en B3.
 
-Lo que B2 deja listo para engancharse:
+Lo que **falta** y es el trabajo de B4:
 
-- `DataClassification::of()` e `isSensitive()` responden qué columna es P3 desde un único
-  sitio. La Policy no tiene que saberlo de memoria.
-- `RelationshipTransition::allowedRoles()` declara los actores permitidos de cada transición
-  como dato, sin comprobarlos. B3 los consume.
-- `RoleAssignment::isEffectiveOn()` y el scope `effective()` ya resuelven la vigencia: CA-08
-  —un rol vencido no otorga permisos— tiene prueba desde B2.
-- `CorrelationId::current()` da el identificador para que la auditoría de una denegación
-  quede correlacionada con la petición que la provocó.
-- El registro de `AuditEvent` con `result` ya existe; B3 lo usa con `denied` y B4 lo amplía.
+1. **Escrituras**: crear y editar personas, identidades y asignaciones no dejan rastro.
+   Solo lo dejan los cambios de estado de relación.
+2. **Errores**: no se registra `result = error` en ningún sitio.
+3. **Logs estructurados**: no existen, y la prueba que pide el paso —que ningún campo P3
+   aparezca en logs— necesita que existan para poder comprobarlos.
+4. **`audit_events` no admite `INSERT` sin tenant resuelto**, y un login fallido ocurre
+   antes de resolverlo (ver `## Deuda conocida`). B4 o B5 tienen que decidir la vía para
+   auditar lo que pasa antes de saber el tenant.
 
 > **Nota de entorno para quien retome:** sin Docker, los servicios locales se levantan con
 > `pg_ctlcluster 16 main start` y `redis-server --daemonize yes`. La base `platform` y los dos
 > roles ya existen y sobreviven entre sesiones; `platform_test` se re-migra con
 > `composer test:prepare`. Los gates: `composer lint`, `composer test`, `composer test:tenant`,
 > `npm run e2e` (con `PLAYWRIGHT_CHROMIUM_PATH=/opt/pw-browsers/chromium` en este entorno).
+> La suite tarda ~35 s: las 216 celdas de la matriz pesan.

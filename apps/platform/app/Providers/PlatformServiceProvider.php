@@ -4,13 +4,20 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
+use App\Domains\Identity\Interfaces\Policies\AuditEventPolicy;
+use App\Domains\People\Domain\Person;
 use App\Domains\People\Domain\PersonRepository;
+use App\Domains\People\Domain\Relationship;
 use App\Domains\People\Domain\RelationshipRepository;
 use App\Domains\People\Infrastructure\EloquentPersonRepository;
 use App\Domains\People\Infrastructure\EloquentRelationshipRepository;
+use App\Domains\People\Interfaces\Policies\PersonPolicy;
+use App\Domains\People\Interfaces\Policies\RelationshipPolicy;
+use App\Domains\Shared\Domain\AuditEvent;
 use App\Domains\Shared\TenantContext;
 use Illuminate\Database\Events\ConnectionEstablished;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 
 /**
@@ -46,6 +53,13 @@ final class PlatformServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        // Las Policies se registran explícitamente y no por descubrimiento automático:
+        // los modelos no viven en app/Models y la convención de Laravel no los encuentra.
+        // Declararlas también deja la lista a la vista de quien revise la autorización.
+        Gate::policy(Person::class, PersonPolicy::class);
+        Gate::policy(Relationship::class, RelationshipPolicy::class);
+        Gate::policy(AuditEvent::class, AuditEventPolicy::class);
+
         Event::listen(function (ConnectionEstablished $evento): void {
             $this->verificar($evento->connectionName);
         });
