@@ -26,27 +26,58 @@ use Illuminate\Support\Facades\DB;
  */
 return new class extends Migration
 {
+    /**
+     * Tabla => columna que la ata a su tenant.
+     *
+     * `tenants` es la excepción y por eso está aquí explícitamente: no tiene `tenant_id`
+     * porque su propio `id` *es* el tenant. Quedó fuera de la lista original y el efecto
+     * era que cualquier tenant podía enumerar a todos los demás —nombre, slug, plan,
+     * región, estado del DPA—, es decir, la lista de clientes de la plataforma. No filtra
+     * datos de personas, pero es una lectura cruzada entre tenants y CA-01 del SPEC no
+     * admite ninguna: «no obtiene ninguna fila del tenant B».
+     */
     private array $tables = [
-        'organizations', 'legal_entities', 'sites', 'positions', 'people', 'identities',
-        'relationships', 'assignments', 'users', 'roles', 'role_assignments',
-        'enrollment_snapshots', 'audit_events',
+        'organizations' => 'tenant_id',
+        'legal_entities' => 'tenant_id',
+        'sites' => 'tenant_id',
+        'positions' => 'tenant_id',
+        'people' => 'tenant_id',
+        'identities' => 'tenant_id',
+        'relationships' => 'tenant_id',
+        'assignments' => 'tenant_id',
+        'users' => 'tenant_id',
+        'roles' => 'tenant_id',
+        'role_assignments' => 'tenant_id',
+        'enrollment_snapshots' => 'tenant_id',
+        'audit_events' => 'tenant_id',
+        'tenants' => 'id',
     ];
 
     public function up(): void
     {
-        foreach ($this->tables as $table) {
+        foreach ($this->tables as $table => $column) {
             DB::statement("ALTER TABLE {$table} ENABLE ROW LEVEL SECURITY");
             DB::statement("ALTER TABLE {$table} FORCE ROW LEVEL SECURITY");
             DB::statement("
                 CREATE POLICY tenant_isolation ON {$table}
-                USING (tenant_id = NULLIF(current_setting('app.tenant_id', true), '')::uuid)
-                WITH CHECK (tenant_id = NULLIF(current_setting('app.tenant_id', true), '')::uuid)
+                USING ({$column} = NULLIF(current_setting('app.tenant_id', true), '')::uuid)
+                WITH CHECK ({$column} = NULLIF(current_setting('app.tenant_id', true), '')::uuid)
             ");
         }
 
         // Invariante 3 del SPEC: people nunca contiene menores de edad.
-        // Se implementa como trigger y no como CHECK porque CURRENT_DATE no es inmutable
-        // y un CHECK con función no inmutable rompe restauraciones de respaldo.
+        //
+        // Trigger y no CHECK. Conviene ser exacto en el motivo, porque el que estaba
+        // escrito aquí era falso: PostgreSQL 16 **sí acepta** un CHECK con CURRENT_DATE
+        // —comprobado— así que no es que no se pueda. Las razones reales son dos:
+        //
+        //  1. La documentación de PostgreSQL desaconseja expresiones no inmutables en un
+        //     CHECK: se reevalúan al restaurar un respaldo y el resultado depende de
+        //     cuándo se restaure. Aquí el predicado solo se vuelve más cierto con el
+        //     tiempo, pero apoyarse en eso es apoyarse en una casualidad del dominio.
+        //  2. Un CHECK violado devuelve un error genérico de restricción. El trigger
+        //     nombra ADR-0003 en el mensaje, y esa es la diferencia entre un incidente
+        //     que se entiende en diez segundos y uno que hay que investigar.
         DB::statement("
             CREATE OR REPLACE FUNCTION assert_person_is_adult() RETURNS trigger AS \$\$
             BEGIN
@@ -72,7 +103,7 @@ return new class extends Migration
         DB::statement('DROP TRIGGER IF EXISTS people_adults_only ON people');
         DB::statement('DROP FUNCTION IF EXISTS assert_person_is_adult()');
 
-        foreach ($this->tables as $table) {
+        foreach (array_keys($this->tables) as $table) {
             DB::statement("DROP POLICY IF EXISTS tenant_isolation ON {$table}");
             DB::statement("ALTER TABLE {$table} NO FORCE ROW LEVEL SECURITY");
             DB::statement("ALTER TABLE {$table} DISABLE ROW LEVEL SECURITY");

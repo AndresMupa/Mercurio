@@ -23,7 +23,7 @@ identificados (ADR 0003).
 |---|---|---|
 | 1 | Toda fila con datos de persona tiene `tenant_id` | constraint `NOT NULL` + RLS |
 | 2 | Ninguna consulta cruza tenants | RLS `FORCE` + middleware + tests |
-| 3 | `people.birth_date` implica mayoría de edad | `CHECK` constraint + test |
+| 3 | `people.birth_date` implica mayoría de edad | trigger `people_adults_only` + test |
 | 4 | Una persona puede tener varias relaciones vigentes | modelo |
 | 5 | Una relación no se borra: se cierra con `valid_to` | política de repositorio + test |
 | 6 | `audit_events` no admite `UPDATE` ni `DELETE` | `REVOKE` al rol de aplicación |

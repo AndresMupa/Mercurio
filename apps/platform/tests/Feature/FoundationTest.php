@@ -76,22 +76,51 @@ it('el rol de runtime no puede desactivar la RLS de una tabla existente', functi
         ->toThrow(QueryException::class);
 })->group('tenant-isolation');
 
-it('las trece tablas con datos de personas tienen RLS activa y forzada', function () {
-    $tablas = ['organizations', 'legal_entities', 'sites', 'positions', 'people',
-        'identities', 'relationships', 'assignments', 'users', 'roles',
-        'role_assignments', 'enrollment_snapshots', 'audit_events'];
+it('toda tabla del esquema tiene RLS activa y forzada', function () {
+    // Deliberadamente NO se enumeran las tablas esperadas. La lista escrita a mano fue
+    // justamente el fallo: `tenants` quedó fuera y nadie lo notó, porque una prueba que
+    // comprueba las tablas que alguien recordó anotar no comprueba las que se olvidan.
+    // Esta pregunta al catálogo, así que una tabla nueva sin RLS rompe aquí sola.
+    $sinRls = DB::connection('pgsql_owner')->select("
+        SELECT c.relname,
+               c.relrowsecurity      AS activa,
+               c.relforcerowsecurity AS forzada
+          FROM pg_class c
+          JOIN pg_namespace n ON n.oid = c.relnamespace
+         WHERE n.nspname = 'public'
+           AND c.relkind = 'r'
+           AND c.relname <> 'migrations'   -- de Laravel, sin datos de tenant
+           AND (NOT c.relrowsecurity OR NOT c.relforcerowsecurity)
+    ");
 
-    $filas = DB::connection('pgsql_owner')->select(
-        'SELECT relname, relrowsecurity, relforcerowsecurity
-           FROM pg_class
-          WHERE relname = ANY(?)',
-        ['{'.implode(',', $tablas).'}']
+    $nombres = array_map(fn (object $t) => $t->relname, $sinRls);
+
+    expect($nombres)->toBeEmpty(
+        'Tablas sin RLS activa y forzada: '.implode(', ', $nombres)
     );
+})->group('tenant-isolation');
 
-    expect($filas)->toHaveCount(count($tablas));
+it('toda tabla del esquema tiene su política de aislamiento', function () {
+    $sinPolitica = DB::connection('pgsql_owner')->select("
+        SELECT c.relname
+          FROM pg_class c
+          JOIN pg_namespace n ON n.oid = c.relnamespace
+         WHERE n.nspname = 'public'
+           AND c.relkind = 'r'
+           AND c.relname <> 'migrations'
+           AND NOT EXISTS (
+               SELECT 1 FROM pg_policies p
+                WHERE p.schemaname = 'public'
+                  AND p.tablename = c.relname
+                  AND p.policyname = 'tenant_isolation'
+           )
+    ");
 
-    foreach ($filas as $fila) {
-        expect($fila->relrowsecurity)->toBeTrue("RLS inactiva en {$fila->relname}");
-        expect($fila->relforcerowsecurity)->toBeTrue("RLS no forzada en {$fila->relname}");
-    }
+    $nombres = array_map(fn (object $t) => $t->relname, $sinPolitica);
+
+    // RLS activa sin política no filtra: deniega todo. Sería fallar cerrado, pero
+    // rompería la aplicación en silencio en vez de aislar.
+    expect($nombres)->toBeEmpty(
+        'Tablas con RLS pero sin política tenant_isolation: '.implode(', ', $nombres)
+    );
 })->group('tenant-isolation');

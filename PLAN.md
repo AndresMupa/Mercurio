@@ -71,7 +71,7 @@ separados: el dueño del esquema (migraciones) y el rol de la aplicación (runti
 > `COMMERCIAL VALUE: —` · `DoD LEVEL: B` · `DATA CLASSIFICATION: P3`
 > Especificación completa: `specs/identity/SPEC.md`. Criterios de aceptación CA-01 a CA-12.
 
-## [ ] B1 · Migraciones, RLS y auditoría bloqueada
+## [x] B1 · Migraciones, RLS y auditoría bloqueada
 
 **Objetivo:** el esquema del Slice 0 con las tres capas de aislamiento.
 
@@ -87,6 +87,14 @@ separados: el dueño del esquema (migraciones) y el rol de la aplicación (runti
 
 **Criterios:** CA-01, CA-02, CA-03, CA-06, CA-11, CA-12.
 **DoD:** nivel B.
+
+> Hecho el 23-ago-2026. Los seis criterios verificados uno por uno. La revisión crítica
+> encontró tres defectos, el primero serio: **`tenants` era la única tabla sin RLS**, así que
+> cualquier cliente podía enumerar la lista de clientes de la plataforma. Corregido, con la
+> prueba de cobertura reescrita para preguntar al catálogo en vez de a una lista escrita a
+> mano. También: inyección SQL en la migración 000300 y un comentario que justificaba una
+> decisión con un hecho falso. Queda **una decisión de producto esperando respuesta** sobre el
+> borrado de tenants. Detalle en `STATE.md`.
 
 ## [ ] B2 · Modelos, repositorios e invariantes
 

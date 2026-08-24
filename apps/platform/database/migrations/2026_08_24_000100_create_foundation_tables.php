@@ -109,6 +109,7 @@ return new class extends Migration
             $t->foreignUuid('person_id')->constrained();
             $t->foreignUuid('legal_entity_id')->constrained();
             $t->foreignUuid('site_id')->nullable()->constrained();
+            // Tabla P2 completa: el tipo de vínculo y su vigencia son dato laboral.
             $t->string('type');             // empleado | contratista | trabajador_contratista | ...
             $t->string('employment_type')->nullable();
             $t->date('valid_from');
@@ -125,7 +126,7 @@ return new class extends Migration
             $t->foreignUuid('relationship_id')->constrained();
             $t->foreignUuid('position_id')->constrained();
             $t->string('teaching_level')->nullable();  // preescolar|basica_primaria|...
-            $t->unsignedSmallInteger('weekly_hours')->nullable();
+            $t->unsignedSmallInteger('weekly_hours')->nullable(); // P2
             $t->date('valid_from');
             $t->date('valid_to')->nullable();
             $t->timestampsTz();
@@ -136,8 +137,8 @@ return new class extends Migration
             $t->uuid('id')->primary();
             $t->foreignUuid('tenant_id')->constrained()->cascadeOnDelete();
             $t->foreignUuid('person_id')->nullable()->constrained();
-            $t->string('email');
-            $t->string('password');
+            $t->string('email');                      // P2
+            $t->string('password');                   // P3 — hash, nunca legible
             $t->boolean('mfa_enabled')->default(false);
             $t->text('mfa_secret')->nullable();       // P3, cifrado en aplicación
             $t->timestampTz('last_login_at')->nullable();
@@ -169,7 +170,7 @@ return new class extends Migration
             $t->index(['tenant_id', 'user_id']);
         });
 
-        // Estudiantes SOLO como conteo. Sin PII. Clasificación P1. (ADR 0003)
+        // Estudiantes SOLO como conteo. Sin PII. Tabla P1 completa. (ADR 0003)
         Schema::create('enrollment_snapshots', function (Blueprint $t) {
             $t->uuid('id')->primary();
             $t->foreignUuid('tenant_id')->constrained()->cascadeOnDelete();
@@ -202,7 +203,7 @@ return new class extends Migration
             $t->uuid('correlation_id')->nullable();
             $t->string('source')->default('web');
             $t->string('result')->default('allowed'); // allowed | denied | error
-            $t->jsonb('context')->nullable();         // nunca contenido P3/P4
+            $t->jsonb('context')->nullable();         // P2 — nunca contenido P3/P4 dentro
             $t->timestampTz('occurred_at')->useCurrent();
             $t->index(['tenant_id', 'occurred_at']);
             $t->index(['tenant_id', 'resource_type', 'resource_id']);

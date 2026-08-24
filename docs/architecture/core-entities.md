@@ -57,7 +57,8 @@ El colegio ancla tiene una sede rural en la vereda Boyero. El `dane_code` es la 
 | `teaching_statute` | Decreto 2277/1979, 1278/2002 o 804/1995 | P2 |
 | `teaching_grade` | Grado en el escalafón. Alimenta el 3,2 % del incremento de tarifa | P2 |
 
-**Invariante:** `birth_date` debe implicar mayoría de edad. Verificado por constraint y por prueba.
+**Invariante:** `birth_date` debe implicar mayoría de edad. Lo garantiza el trigger
+`people_adults_only` en `INSERT` y en `UPDATE`, no una validación de formulario, y hay prueba.
 
 ### `identities`
 `id` · `tenant_id` · `person_id` · `document_type` · `document_number` · `country_code`

@@ -7,13 +7,17 @@
 
 ## Slice actual
 
-**Slice 0 — Foundation** · **Etapa A completa (A1 y A2)**, siguiente **B1** de `PLAN.md`
+**Slice 0 — Foundation** · **A1, A2 y B1 completos**, siguiente **B2** de `PLAN.md`
 `COMMERCIAL VALUE: —` (único slice estructural permitido) · `DoD LEVEL: B` · `DATA CLASSIFICATION: P3`
 
-Estado: **A1 y A2 en verde salvo la compuerta TYPECHECK**, que no pudo instalarse por una
-restricción de red del entorno (ver `## Bloqueos`). El harness operativo ya se cumple solo:
-un commit con una prueba de aislamiento rota **no pasa**, verificado a mano. El colegio ancla
-dio luz verde al piloto el 23 de agosto de 2026.
+Estado: esquema, RLS y auditoría bloqueada verificados. **B1 encontró y cerró una exposición
+cross-tenant real** (ver abajo). Todo en verde salvo la compuerta TYPECHECK, que sigue sin
+herramienta por una restricción de red del entorno (`## Bloqueos`). El harness operativo se
+cumple solo: un commit con una prueba de aislamiento rota **no pasa**, verificado a mano.
+El colegio ancla dio luz verde al piloto el 23 de agosto de 2026.
+
+**Hay una decisión de producto esperando respuesta humana** en `## Bloqueos`: si la aplicación
+debe poder borrar un tenant.
 
 > **`PLAN.md` es el documento que se ejecuta.** Un paso por sesión, en orden, marcando la casilla
 > y haciendo commit al terminar cada uno.
@@ -161,6 +165,94 @@ lanza `RuntimeException` y la suite se pone en rojo. Privilegio revocado despué
    está sostenido por `CLAUDE.md`, `STATE.md` y los comandos de `.claude/commands/`.
    Empaquetarlo como skill habría añadido una capa sin resolver ningún problema abierto.
 
+## Paso B1 — hecho el 23-ago-2026
+
+Revisión crítica de las tres migraciones contra `specs/identity/SPEC.md`,
+`docs/architecture/core-entities.md` y `docs/architecture/data-classification.md`.
+
+### Hallazgo P0 — cualquier tenant podía enumerar a todos los demás
+
+`tenants` era la única tabla del esquema sin RLS. No tiene columna `tenant_id` —su propio
+`id` es la llave del aislamiento— y por eso quedó fuera de la lista de trece tablas de la
+migración 000200. Nadie lo había notado porque **la prueba que comprobaba la cobertura de RLS
+enumeraba a mano esas mismas trece tablas**: comprobaba lo que alguien recordó anotar.
+
+Comprobado antes de tocar nada: situado como el tenant `uno`, un `SELECT` sobre `tenants`
+devolvía también la fila de `dos` —nombre, slug, plan, región, estado del DPA—. Es decir,
+**la lista de clientes de la plataforma**. No filtraba datos de personas: `people`,
+`identities` y el resto sí estaban protegidas. Pero es una lectura cruzada entre tenants, y
+CA-01 no admite ninguna: «no obtiene ninguna fila del tenant B».
+
+**Corregido:** `tenants` entra en la RLS con política sobre su propio `id`. La lista de tablas
+de la migración pasó a ser un mapa `tabla => columna del tenant`, que es lo que permite
+tratar el caso de `tenants` sin excepciones escritas a mano.
+
+**Y para que no vuelva a pasar por el mismo camino:** las pruebas de cobertura de RLS ya no
+enumeran tablas. Preguntan al catálogo de PostgreSQL por toda tabla de `public` sin RLS
+activa, sin RLS forzada o sin política `tenant_isolation`. Una tabla nueva mal configurada
+rompe la prueba sola, sin que nadie tenga que acordarse de añadirla a una lista.
+
+### Segundo defecto — inyección SQL en la migración de auditoría
+
+La migración 000300 interpolaba `env('DB_APP_ROLE')` directamente en sentencias `GRANT` y
+`REVOKE` que corren con el dueño del esquema, el rol de mayor privilegio del sistema. Un
+identificador de PostgreSQL no se puede pasar como parámetro enlazado, así que interpolar es
+inevitable; hacerlo sin validar el contenido no lo es.
+
+Corregido con lista blanca de identificador, comprobación de que el rol existe y —más
+importante— tomando el rol de `config('database.connections.pgsql.username')` en vez de
+`env()`. Dos motivos: `env()` devuelve null con la configuración cacheada, así que un
+despliegue normal podía ejecutar la migración sin rol y dejar la auditoría sin blindar; y lo
+que hay que blindar es el rol con el que la aplicación se conecta de verdad, no una variable
+que puede desincronizarse de él.
+
+### Tercer defecto — un comentario que afirmaba algo falso
+
+La migración justificaba usar un trigger en vez de un `CHECK` diciendo que «CURRENT_DATE no
+es inmutable y un CHECK con función no inmutable rompe restauraciones». **PostgreSQL 16
+acepta ese CHECK sin protestar** —comprobado ejecutándolo—. El trigger sigue siendo la
+elección correcta, pero por otras razones, y ahora están escritas las de verdad. Un
+comentario falso es peor que ninguno: el siguiente que lo lea construirá encima.
+
+`SPEC.md` (invariante 3) y `core-entities.md` decían «CHECK constraint»; ahora dicen trigger,
+que es lo que hay.
+
+### Lo verificado, criterio por criterio
+
+| Criterio | Cómo se verificó | Estado |
+|---|---|---|
+| **CA-01** | Lectura por id, listado, relación indirecta en las 13 tablas con un grafo completo del otro tenant, y enumeración de `tenants` | verde; la parte de exportación no aplica: no existe hasta el Slice 1 |
+| **CA-02** | Guard de aplicación desactivado y conexión purgada; la RLS sostiene sola | verde |
+| **CA-03** | Trigger probado en los tres casos frontera: 18 años exactos hoy **acepta**, un día menos **rechaza**, y también protege el `UPDATE` | verde |
+| **CA-06** | `UPDATE` y `DELETE` sobre `audit_events` con el rol de aplicación fallan; privilegios reales tras el ciclo completo: solo `INSERT, SELECT` | verde |
+| **CA-11** | Columnas reales de `enrollment_snapshots` leídas del catálogo; ningún identificador | verde |
+| **CA-12** | `migrate:rollback` de los tres pasos y vuelta a migrar, en las dos bases. Tras el rollback no quedan tablas, funciones, políticas ni triggers huérfanos: solo `migrations` | verde |
+
+### `/tenant-test` — los siete escenarios del comando
+
+Escenarios 1 (lectura por id), 2 (listado sin filtro), 3 (escritura sobre recurso ajeno),
+4 (relación indirecta) y 7 (RLS con el guard desactivado): **cubiertos**.
+
+Escenario 6 (cola fuera del contexto de la petición): **cubierto**, nuevo. Es un riesgo P0
+declarado en el SPEC. Un worker que arranca sin `app.tenant_id` no ve ninguna fila; con el
+tenant del payload ve solo ese.
+
+Escenario 5 (exportación, reporte, búsqueda global, notificación): **no aplica todavía**.
+Ninguna de las cuatro existe hasta el Slice 1. No se marca como cubierto lo que no existe.
+
+Además, las pruebas de aislamiento sobre tablas vacías eran vacías: `count() == 0` salía
+verdadero tanto si la RLS filtraba como si no había nada que filtrar. Ahora el otro tenant
+tiene una fila en cada tabla y la prueba falla si el fixture no la pobló.
+
+### Lo que se decidió NO hacer en B1
+
+Faltaban clasificaciones de `data-classification.md` en la migración (`users.email`,
+`users.password`, `audit_events.context`, `relationships`, `assignments.weekly_hours`): se
+anotaron. Pero la regla 5 de ese documento —«un campo sin clasificación rompe el build»— **no
+existe como mecanismo**: nada la comprueba. Su sitio natural es B2, junto a los invariantes
+del dominio, no una migración.
+
+
 ## Decisiones tomadas
 
 | Fecha | Decisión | Dónde |
@@ -212,11 +304,40 @@ que no se ejecutó. A2 tampoco pudo cerrarlo: la restricción es del entorno, no
 > `composer require --dev larastan/larastan` y un `phpstan.neon` en nivel 5 como mínimo.
 > Es lo único que queda abierto de la Etapa A.
 
+### 3. Decisión de producto pendiente — ¿puede la aplicación borrar un tenant?
+
+Encontrado en la auditoría de B1, **no corregido a propósito**: los doce `FOREIGN KEY` que
+apuntan a `tenants` son `ON DELETE CASCADE`, y `platform_app` tiene `DELETE` sobre `tenants`
+por los privilegios por defecto del script de roles. Un solo `DELETE FROM tenants` desde la
+aplicación destruye organización, sedes, personas, identidades, relaciones, asignaciones,
+usuarios, roles y matrículas de ese tenant, sin vuelta atrás.
+
+Lo que sí está bien resuelto: `audit_events` **no** tiene `FOREIGN KEY` a `tenants`, así que
+la auditoría sobrevive al borrado. Eso sostiene la retención de 5 años de
+`data-classification.md` y parece deliberado.
+
+No se toca porque es una decisión de producto y de derecho, no una de ingeniería, y §5 de
+`CLAUDE.md` dice que eso se pregunta en vez de improvisarlo:
+
+- **Recomendación:** revocar `DELETE` sobre `tenants` al rol de aplicación. Nadie lo usa hoy,
+  el ciclo de vida ya se expresa con `tenants.status`, y darlo de baja convierte una
+  operación irreversible en imposible desde el código de producto.
+- **Contra:** el derecho de supresión del titular puede exigir borrado efectivo. Si es así,
+  el borrado debe ser un procedimiento explícito con respaldo previo y responsable
+  identificado, no un privilegio permanente de la aplicación.
+
+Mientras no haya respuesta, el riesgo sigue abierto y **ningún paso posterior debería
+implementar borrado de tenant**.
+
 ## Deuda conocida
 
 | Qué | Por qué importa | Cuándo se paga |
 |---|---|---|
 | Compuerta TYPECHECK sin herramienta | Es una de las seis del DoD nivel A. A2 no pudo cerrarla: `api.github.com` bloqueado | Primera sesión con red sin restricción |
+| La regla 5 de `data-classification.md` —«un campo sin clasificación rompe el build»— no existe como mecanismo | Es una regla escrita que nada comprueba; hoy se sostiene por revisión humana | B2, junto a los invariantes del dominio: registro de clasificación por columna + prueba que exija nivel a toda columna del esquema |
+| `audit_events` no admite `INSERT` sin tenant resuelto: la RLS lo rechaza | Un login fallido ocurre **antes** de resolver el tenant, y CA-04 exige auditar la denegación. Comprobado: el `INSERT` sin contexto falla | B4/B5: resolver el tenant desde la petición antes de autenticar, o abrir una vía de auditoría de plataforma |
+| La RLS sobre `tenants` bloquea también la resolución de tenant por `slug` antes del login | B5 necesita encontrar el tenant para poder autenticar dentro de él | B5: resolver por host/slug y fijar el contexto antes de autenticar; si hace falta lectura previa, función `SECURITY DEFINER` que devuelva un solo id y no permita enumerar |
+| `enrollment_snapshots` no tiene identificadores, pero la combinación sede + año + grado + jornada + sexo + rango de edad + condición con `headcount` bajo es cuasi-identificadora | Dentro del tenant es aceptable —el colegio ya conoce a sus estudiantes—; fuera del tenant no | C5: la supresión de celdas con `headcount < 5` en exportaciones ya está prevista en `core-entities.md` |
 | El E2E de Playwright no corre en el hook de pre-commit | Solo el grupo `tenant-isolation` bloquea el commit; un E2E roto pasaría | Cuando exista CI, que es su sitio: 4 s por commit no se justifican |
 | Laravel 11.56 arrastra tres avisos de seguridad sin parche en su rama, uno **alto**: CVE-2026-48019, inyección CRLF en la regla de validación `email`. Corregido solo en 12.60+ | El paso B5 implementa autenticación y validará correos | B5: usar `email:rfc,strict` en vez de la regla `email` por defecto, o evaluar con ADR el salto a Laravel 12 |
 | `TenantContext::clear()` deja `app.tenant_id` en cadena vacía y ejecuta una consulta aunque nunca se hubiera fijado tenant | Una consulta por petición sin necesidad; ya no es un riesgo de corrección gracias al `NULLIF` | B2, al revisar el dominio |
@@ -234,27 +355,34 @@ que no se ejecutó. A2 tampoco pudo cerrarlo: la restricción es del entorno, no
 
 ## Próximo paso concreto
 
-**Paso B1 de `PLAN.md`:** migraciones, RLS y auditoría bloqueada. Aquí empieza el Slice 0 de
-verdad y el DoD sube a **nivel B**.
+**Paso B2 de `PLAN.md`:** modelos, repositorios e invariantes. El dominio expresado en código,
+no en el controlador.
 
-Antes de tocar nada, leer: `docs/architecture/core-entities.md`,
-`docs/architecture/data-classification.md` y `specs/identity/SPEC.md`.
+Lo que pide el paso:
 
-El trabajo de B1 es la **revisión crítica de las tres migraciones contra la especificación**,
-no volver a escribirlas. Ya corren en limpio y el grupo `tenant-isolation` está en verde, así
-que lo que queda es lo que ninguna prueba puede decidir por ti:
+1. Modelos y repositorios de `app/Domains/Identity` y `app/Domains/People` con la estructura
+   DOMAIN / APPLICATION / INFRASTRUCTURE / INTERFACES.
+2. La máquina de estados de `relationships` con **clases de transición explícitas**, no
+   booleanos: `PLANNED → ACTIVE → SUSPENDED → ACTIVE` y `ACTIVE → ENDED` terminal. El SPEC
+   prohíbe el borrado como transición.
+3. Los nueve invariantes del SPEC, cada uno con prueba unitaria propia.
+4. Ninguna lógica de negocio en controladores.
 
-1. Contrastar las 13 tablas y cada columna contra `core-entities.md` y la clasificación de
-   datos. La migración declara clasificaciones en comentarios (`// P3`); comprobar que
-   coinciden con `data-classification.md`.
-2. Verificar CA-01, CA-02, CA-03, CA-06, CA-11 y CA-12 del SPEC uno por uno.
-3. **Desconfiar del resto de la migración 000200.** El hallazgo del `NULLIF` (arriba) salió
-   de una prueba en rojo; puede haber más supuestos igual de frágiles que ninguna prueba
-   actual toca.
-4. Revisar la deuda de privilegios de la migración 000300 anotada en `## Deuda conocida`.
-5. Ejecutar `/tenant-test` y `/dod`.
+Contexto que B1 deja resuelto o abierto para este paso:
+
+- Los invariantes 1, 2, 3, 6 y 9 ya están garantizados en base de datos y con prueba. B2 los
+  expresa en el dominio, pero no tiene que inventarlos.
+- El invariante 5 —«una relación no se borra: se cierra»— hoy es solo convención: el rol de
+  aplicación tiene `DELETE` sobre `relationships`. El SPEC dice que se garantiza con «política
+  de repositorio + test», así que es trabajo de B2. Vale la pena considerar revocar también el
+  `DELETE` en base de datos, igual que en `audit_events`.
+- El registro de clasificación por columna (regla 5 de `data-classification.md`) es el sitio
+  natural para B2, y B3 lo va a necesitar para exigir `purpose` en P3.
+- El modelo `User` va en `App\Domains\Identity\Domain\User`: `config/auth.php` ya apunta ahí
+  y hoy no resuelve, a propósito.
 
 > **Nota de entorno para quien retome:** sin Docker, los servicios locales se levantan con
-> `pg_ctlcluster 16 main start` y `redis-server --daemonize yes`. La base `platform` y los
-> dos roles ya existen y sobreviven entre sesiones; `platform_test` se re-migra con
-> `composer test:prepare`.
+> `pg_ctlcluster 16 main start` y `redis-server --daemonize yes`. La base `platform` y los dos
+> roles ya existen y sobreviven entre sesiones; `platform_test` se re-migra con
+> `composer test:prepare`. Los gates: `composer lint`, `composer test`, `composer test:tenant`,
+> `npm run e2e` (con `PLAYWRIGHT_CHROMIUM_PATH=/opt/pw-browsers/chromium` en este entorno).
