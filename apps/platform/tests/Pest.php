@@ -7,6 +7,7 @@ use Tests\Concerns\ResetsPlatformDatabase;
 use Tests\TestCase;
 
 uses(TestCase::class, ResetsPlatformDatabase::class)->in('Feature');
+uses(TestCase::class, ResetsPlatformDatabase::class)->in('Domains');
 
 /**
  * Helpers de prueba. Crean datos directamente por consulta para no depender del dominio

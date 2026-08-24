@@ -7,17 +7,18 @@
 
 ## Slice actual
 
-**Slice 0 — Foundation** · **A1, A2 y B1 completos**, siguiente **B2** de `PLAN.md`
+**Slice 0 — Foundation** · **A1, A2, B1 y B2 completos**, siguiente **B3** de `PLAN.md`
 `COMMERCIAL VALUE: —` (único slice estructural permitido) · `DoD LEVEL: B` · `DATA CLASSIFICATION: P3`
 
-Estado: esquema, RLS y auditoría bloqueada verificados. **B1 encontró y cerró una exposición
-cross-tenant real** (ver abajo). Todo en verde salvo la compuerta TYPECHECK, que sigue sin
-herramienta por una restricción de red del entorno (`## Bloqueos`). El harness operativo se
-cumple solo: un commit con una prueba de aislamiento rota **no pasa**, verificado a mano.
-El colegio ancla dio luz verde al piloto el 23 de agosto de 2026.
+Estado: esquema y dominio construidos. 55 pruebas, 143 aserciones. Los nueve invariantes del
+SPEC tienen prueba propia. El DoD de nivel B está en verde salvo AUTHORIZATION —que es el
+paso B3— y TYPECHECK, sin herramienta por una restricción de red del entorno. El harness
+operativo se cumple solo: un commit con una prueba de aislamiento rota **no pasa**,
+verificado a mano. El colegio ancla dio luz verde al piloto el 23 de agosto de 2026.
 
-**Hay una decisión de producto esperando respuesta humana** en `## Bloqueos`: si la aplicación
-debe poder borrar un tenant.
+**Hay tres cosas esperando respuesta humana**, todas en `## Bloqueos`: si la aplicación debe
+poder borrar un tenant, y dos huecos de la máquina de estados del SPEC que B2 tuvo que
+interpretar.
 
 > **`PLAN.md` es el documento que se ejecuta.** Un paso por sesión, en orden, marcando la casilla
 > y haciendo commit al terminar cada uno.
@@ -253,6 +254,102 @@ existe como mecanismo**: nada la comprueba. Su sitio natural es B2, junto a los 
 del dominio, no una migración.
 
 
+## Paso B2 — hecho el 23-ago-2026
+
+El dominio expresado en código. Modelos, repositorios, máquina de estados y los nueve
+invariantes del SPEC con prueba propia.
+
+### Lo construido
+
+| Qué | Dónde |
+|---|---|
+| Aislamiento en el modelo: global scope + `tenant_id` impuesto al crear | `app/Domains/Shared/Domain/BelongsToTenant.php` |
+| Modelo base del núcleo (uuid + tenancy) | `app/Domains/Shared/Domain/PlatformModel.php` |
+| Registro de clasificación por columna | `app/Domains/Shared/Domain/DataClassification.php` |
+| Identificador de correlación por petición | `app/Domains/Shared/CorrelationId.php` |
+| Auditoría como modelo, append-only también en PHP | `app/Domains/Shared/Domain/AuditEvent.php` |
+| Identity: Tenant, User, Role, RoleAssignment | `app/Domains/Identity/Domain/` |
+| People: Person, PersonIdentity, Relationship, Assignment, Organization, LegalEntity, Site, Position, EnrollmentSnapshot | `app/Domains/People/Domain/` |
+| Máquina de estados con cuatro clases de transición | `app/Domains/People/Domain/Transitions/` |
+| Contratos de repositorio (Domain) e implementación Eloquent (Infrastructure) | `app/Domains/People/{Domain,Infrastructure}/` |
+| Nueve invariantes, cada uno con su prueba | `tests/Domains/People/InvariantsTest.php` |
+| Reglas de arquitectura comprobadas | `tests/Domains/Shared/ArchitectureTest.php` |
+
+### Decisiones tomadas en este paso
+
+1. **El estado es un enum, no booleanos.** `is_active` + `is_suspended` admite cuatro
+   combinaciones de las que dos no significan nada, y nada impide escribirlas. Un enum
+   solo admite los estados que existen.
+2. **El borrado de una relación lo impide el modelo, no solo el repositorio.** El SPEC dice
+   que el invariante 5 se garantiza con «política de repositorio + test», pero una política
+   que vive solo en el repositorio se salta llamando a `delete()` desde cualquier sitio.
+   El evento `deleting` lanza, y el contrato del repositorio **no tiene** método de borrado
+   —hay una prueba que lo comprueba por reflexión—.
+3. **Sin tenant en el contexto, el global scope devuelve cero filas en vez de lanzar.** Es
+   exactamente lo que hace la RLS en la misma situación. Si una capa lanzara y la otra
+   filtrara, el comportamiento dependería de cuál actuara primero.
+4. **El `tenant_id` que llegue de fuera se ignora.** Se impone el del contexto al crear.
+   Respetarlo sería dejar que el cuerpo de una petición decidiera a qué tenant escribe.
+   Hay prueba.
+5. **Las transiciones escriben su `AuditEvent`.** `PLAN.md` asigna la auditoría del flujo
+   completo a B4, pero la regla 4 de `CLAUDE.md` no admite que una operación relevante
+   ocurra sin auditoría, y un cambio de estado de una relación laboral lo es. B4 amplía a
+   lecturas P3, denegaciones y errores.
+6. **La autorización NO se implementó aquí.** Las transiciones *declaran* `allowedRoles()`
+   como dato, para que B3 lo consuma, pero no lo comprueban: decidir necesita el
+   `AuthorizationContext` completo —alcance, relación, clasificación, propósito—, no el
+   nombre de un rol.
+7. **Una relación nace `planned`, no `active`.** La columna tiene `active` por defecto en
+   base de datos, así que crear una fila directamente activa sigue siendo posible —y hace
+   falta para la carga masiva de D1—. Pero el repositorio expone `startPlanned()`: por el
+   camino normal, activar es una transición con precondiciones y con su evento.
+
+### Defecto encontrado y corregido dentro del propio paso
+
+La primera versión de las transiciones generaba un `correlation_id` nuevo en cada
+`AuditEvent`. Eso produce una columna llamada «correlación» que no correlaciona nada: dos
+eventos de la misma operación salían con identificadores distintos, y reconstruir qué pasó
+en un incidente —que es para lo que existe la columna— habría sido imposible.
+
+Salió al evaluar la compuerta OBSERVABILITY del DoD, no de leer el código. Corregido con
+`CorrelationId`, uno por petición, fijado por el middleware y aceptando `X-Correlation-Id`
+para seguir una operación entre servicios. Con prueba.
+
+### Dos huecos del SPEC que este paso obliga a decidir
+
+1. **`SUSPENDED → ACTIVE` está en el diagrama del SPEC pero no en su tabla de transiciones.**
+   No declara actor, precondiciones ni evento. Se implementó `ReactivateRelationship` con
+   evento propio `relationship.reactivated`, distinto de `relationship.activated`: reanudar
+   no es lo mismo que activar por primera vez y la auditoría tiene que poder distinguirlos.
+2. **`SUSPENDED → ENDED` no está contemplado.** La tabla solo admite cerrar desde `ACTIVE`.
+   Si se respetara al pie de la letra, una relación suspendida no podría cerrarse nunca y
+   habría que reactivarla para poder terminarla, que es peor. Se admite.
+
+Las dos son interpretaciones razonables, pero son **mías**, no del SPEC. Conviene
+confirmarlas o corregirlas antes de B9.
+
+### `/dod` — nivel B declarado, resultado real
+
+| Compuerta | Resultado |
+|---|---|
+| BUILD | **verde** · `vite build` |
+| LINT | **verde** · Pint |
+| TYPECHECK | **sin verificar** · no hay analizador instalable en este entorno (`## Bloqueos`) |
+| UNIT | **verde** · 55 pruebas, 143 aserciones |
+| INTEGRATION | **verde** · contra PostgreSQL real y con el rol de aplicación |
+| DOCUMENTATION | **verde** · `STATE.md`, `PLAN.md`, `SPEC.md` y `core-entities.md` |
+| AUTHORIZATION | **rojo** · no existe todavía: es el paso B3 |
+| TENANT ISOLATION | **verde** · 26 pruebas en el grupo |
+| E2E | **verde** · 3 en Chromium |
+| ACCESSIBILITY | **parcial** · la única pantalla existente está cubierta con teclado y sin depender del color; B2 no añadió interfaz |
+| MIGRATIONS | **verde** · ciclo rollback + migrate limpio |
+| OBSERVABILITY | **parcial** · correlación real por petición, health check y comprobación de dependencias; faltan logs estructurados, métricas, tracing y monitoreo de colas |
+
+**El Slice 0 no está terminado**, y eso es lo esperado: AUTHORIZATION es B3 y el DoD del
+slice se cierra en B9. Lo que sí queda cerrado es el paso B2. Ninguna prueba se desactivó
+ni se bajó de nivel.
+
+
 ## Decisiones tomadas
 
 | Fecha | Decisión | Dónde |
@@ -329,12 +426,31 @@ No se toca porque es una decisión de producto y de derecho, no una de ingenier�
 Mientras no haya respuesta, el riesgo sigue abierto y **ningún paso posterior debería
 implementar borrado de tenant**.
 
+### 4. Dos huecos de la máquina de estados que B2 tuvo que interpretar
+
+`specs/identity/SPEC.md` define la máquina como
+`PLANNED → ACTIVE → SUSPENDED → ACTIVE` y `ACTIVE → ENDED (terminal)`, pero su **tabla** de
+transiciones solo declara tres filas. Dos caminos del diagrama quedan sin actor,
+precondiciones ni evento de auditoría, y B2 no podía dejarlos sin implementar:
+
+- **`SUSPENDED → ACTIVE`** — implementado como `ReactivateRelationship`, con evento propio
+  `relationship.reactivated` en vez de reutilizar `relationship.activated`. Reanudar no es
+  activar por primera vez y la auditoría tiene que poder distinguirlos.
+- **`SUSPENDED → ENDED`** — admitido, aunque la tabla solo contemple cerrar desde `ACTIVE`.
+  Respetarla al pie de la letra dejaría una relación suspendida sin forma de cerrarse:
+  habría que reactivarla para terminarla, que es peor y ensucia la auditoría.
+
+Las dos son interpretaciones defendibles, pero son **mías, no del SPEC**. Hace falta
+confirmarlas o corregirlas —y en su caso añadir las filas a la tabla del SPEC con actor y
+precondiciones— antes de B9.
+
 ## Deuda conocida
 
 | Qué | Por qué importa | Cuándo se paga |
 |---|---|---|
 | Compuerta TYPECHECK sin herramienta | Es una de las seis del DoD nivel A. A2 no pudo cerrarla: `api.github.com` bloqueado | Primera sesión con red sin restricción |
-| La regla 5 de `data-classification.md` —«un campo sin clasificación rompe el build»— no existe como mecanismo | Es una regla escrita que nada comprueba; hoy se sostiene por revisión humana | B2, junto a los invariantes del dominio: registro de clasificación por columna + prueba que exija nivel a toda columna del esquema |
+| OBSERVABILITY solo está a medias: hay correlación por petición, health check y comprobación de dependencias | Faltan logs estructurados, métricas, tracing y monitoreo de colas (§21 del harness). Es compuerta del DoD nivel B | Antes de B9, que es donde se cierra el DoD del slice |
+| El invariante 5 lo sostienen el modelo y el repositorio, no la base | `platform_app` conserva `DELETE` sobre `relationships`. `audit_events` sí lo tiene revocado en base | Considerar revocarlo también aquí; encaja con la decisión pendiente del bloqueo 3 |
 | `audit_events` no admite `INSERT` sin tenant resuelto: la RLS lo rechaza | Un login fallido ocurre **antes** de resolver el tenant, y CA-04 exige auditar la denegación. Comprobado: el `INSERT` sin contexto falla | B4/B5: resolver el tenant desde la petición antes de autenticar, o abrir una vía de auditoría de plataforma |
 | La RLS sobre `tenants` bloquea también la resolución de tenant por `slug` antes del login | B5 necesita encontrar el tenant para poder autenticar dentro de él | B5: resolver por host/slug y fijar el contexto antes de autenticar; si hace falta lectura previa, función `SECURITY DEFINER` que devuelva un solo id y no permita enumerar |
 | `enrollment_snapshots` no tiene identificadores, pero la combinación sede + año + grado + jornada + sexo + rango de edad + condición con `headcount` bajo es cuasi-identificadora | Dentro del tenant es aceptable —el colegio ya conoce a sus estudiantes—; fuera del tenant no | C5: la supresión de celdas con `headcount < 5` en exportaciones ya está prevista en `core-entities.md` |
@@ -355,31 +471,31 @@ implementar borrado de tenant**.
 
 ## Próximo paso concreto
 
-**Paso B2 de `PLAN.md`:** modelos, repositorios e invariantes. El dominio expresado en código,
-no en el controlador.
+**Paso B3 de `PLAN.md`:** autorización RBAC + ABAC con propósito. Es la compuerta que hoy
+está en rojo en el DoD del slice.
+
+Antes de tocar nada, leer `docs/architecture/permissions.md`.
 
 Lo que pide el paso:
 
-1. Modelos y repositorios de `app/Domains/Identity` y `app/Domains/People` con la estructura
-   DOMAIN / APPLICATION / INFRASTRUCTURE / INTERFACES.
-2. La máquina de estados de `relationships` con **clases de transición explícitas**, no
-   booleanos: `PLANNED → ACTIVE → SUSPENDED → ACTIVE` y `ACTIVE → ENDED` terminal. El SPEC
-   prohíbe el borrado como transición.
-3. Los nueve invariantes del SPEC, cada uno con prueba unitaria propia.
-4. Ninguna lógica de negocio en controladores.
+1. `AuthorizationContext` con user, tenant, legalEntity, site, relationship, resource,
+   action, purpose y dataClassification, y las Policies de Laravel que lo consumen.
+2. `purpose` obligatorio para P3, validado contra una lista cerrada.
+3. Una prueba de autorización **por cada celda** de la matriz, incluidas las denegaciones.
+4. Verificar los siete invariantes de esa matriz.
+5. Ejecutar `/threat` sobre el resultado.
 
-Contexto que B1 deja resuelto o abierto para este paso:
+Lo que B2 deja listo para engancharse:
 
-- Los invariantes 1, 2, 3, 6 y 9 ya están garantizados en base de datos y con prueba. B2 los
-  expresa en el dominio, pero no tiene que inventarlos.
-- El invariante 5 —«una relación no se borra: se cierra»— hoy es solo convención: el rol de
-  aplicación tiene `DELETE` sobre `relationships`. El SPEC dice que se garantiza con «política
-  de repositorio + test», así que es trabajo de B2. Vale la pena considerar revocar también el
-  `DELETE` en base de datos, igual que en `audit_events`.
-- El registro de clasificación por columna (regla 5 de `data-classification.md`) es el sitio
-  natural para B2, y B3 lo va a necesitar para exigir `purpose` en P3.
-- El modelo `User` va en `App\Domains\Identity\Domain\User`: `config/auth.php` ya apunta ahí
-  y hoy no resuelve, a propósito.
+- `DataClassification::of()` e `isSensitive()` responden qué columna es P3 desde un único
+  sitio. La Policy no tiene que saberlo de memoria.
+- `RelationshipTransition::allowedRoles()` declara los actores permitidos de cada transición
+  como dato, sin comprobarlos. B3 los consume.
+- `RoleAssignment::isEffectiveOn()` y el scope `effective()` ya resuelven la vigencia: CA-08
+  —un rol vencido no otorga permisos— tiene prueba desde B2.
+- `CorrelationId::current()` da el identificador para que la auditoría de una denegación
+  quede correlacionada con la petición que la provocó.
+- El registro de `AuditEvent` con `result` ya existe; B3 lo usa con `denied` y B4 lo amplía.
 
 > **Nota de entorno para quien retome:** sin Docker, los servicios locales se levantan con
 > `pg_ctlcluster 16 main start` y `redis-server --daemonize yes`. La base `platform` y los dos

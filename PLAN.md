@@ -96,7 +96,7 @@ separados: el dueño del esquema (migraciones) y el rol de la aplicación (runti
 > decisión con un hecho falso. Queda **una decisión de producto esperando respuesta** sobre el
 > borrado de tenants. Detalle en `STATE.md`.
 
-## [ ] B2 · Modelos, repositorios e invariantes
+## [x] B2 · Modelos, repositorios e invariantes
 
 **Objetivo:** el dominio expresado en código, no en el controlador.
 
@@ -109,6 +109,14 @@ separados: el dueño del esquema (migraciones) y el rol de la aplicación (runti
 
 **Criterios:** invariantes 1 a 9 del SPEC.
 **DoD:** nivel B.
+
+> Hecho el 23-ago-2026. Los nueve invariantes con prueba propia; 55 pruebas en total.
+> Máquina de estados con cuatro clases de transición y borrado imposible, no solo prohibido.
+> `/dod` ejecutado: verde salvo **AUTHORIZATION** —que es B3— y **TYPECHECK**, sin herramienta
+> en este entorno. OBSERVABILITY y ACCESSIBILITY quedan parciales. Corregido dentro del paso
+> un defecto propio: cada transición generaba su `correlation_id`, así que la columna no
+> correlacionaba nada. Quedan **dos huecos de la máquina de estados del SPEC** interpretados
+> por B2 y pendientes de confirmación. Detalle en `STATE.md`.
 
 ## [ ] B3 · Autorización RBAC + ABAC con propósito
 

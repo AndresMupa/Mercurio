@@ -4,6 +4,10 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
+use App\Domains\People\Domain\PersonRepository;
+use App\Domains\People\Domain\RelationshipRepository;
+use App\Domains\People\Infrastructure\EloquentPersonRepository;
+use App\Domains\People\Infrastructure\EloquentRelationshipRepository;
 use App\Domains\Shared\TenantContext;
 use Illuminate\Database\Events\ConnectionEstablished;
 use Illuminate\Support\Facades\Event;
@@ -28,6 +32,17 @@ final class PlatformServiceProvider extends ServiceProvider
 {
     /** @var array<string, true> Conexiones ya verificadas en este proceso. */
     private static array $verificadas = [];
+
+    /**
+     * El dominio depende de la interfaz; la implementación con Eloquent se enchufa
+     * aquí. Es lo que permite que una prueba unitaria de un invariante no necesite
+     * base de datos si no la necesita de verdad.
+     */
+    public function register(): void
+    {
+        $this->app->bind(PersonRepository::class, EloquentPersonRepository::class);
+        $this->app->bind(RelationshipRepository::class, EloquentRelationshipRepository::class);
+    }
 
     public function boot(): void
     {

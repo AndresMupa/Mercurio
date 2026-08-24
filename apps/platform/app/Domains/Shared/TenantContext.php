@@ -30,6 +30,18 @@ final class TenantContext
         self::$tenantId = null;
     }
 
+    /**
+     * El tenant actual, o null si no hay ninguno fijado.
+     *
+     * Existe para el global scope de los modelos, que no puede lanzar: una consulta sin
+     * tenant tiene que devolver cero filas —igual que hace la RLS— y no reventar la
+     * petición. Cuando el código de dominio necesita un tenant sí o sí, usa id().
+     */
+    public static function idOrNull(): ?string
+    {
+        return self::$tenantId;
+    }
+
     public static function id(): string
     {
         return self::$tenantId ?? throw new RuntimeException(

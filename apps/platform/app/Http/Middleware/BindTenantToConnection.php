@@ -2,9 +2,11 @@
 
 namespace App\Http\Middleware;
 
+use App\Domains\Shared\CorrelationId;
 use App\Domains\Shared\TenantContext;
 use Closure;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
@@ -15,6 +17,11 @@ final class BindTenantToConnection
 {
     public function handle(Request $request, Closure $next): Response
     {
+        // Un identificador por petición, propagado a toda la auditoría que ocurra
+        // dentro. Se acepta el de una cabecera para poder seguir una operación que
+        // atraviesa varios servicios.
+        CorrelationId::set($request->header('X-Correlation-Id') ?: (string) Str::uuid());
+
         $tenantId = $request->user()?->tenant_id;
 
         if ($tenantId) {
@@ -28,5 +35,6 @@ final class BindTenantToConnection
     public function terminate(Request $request, Response $response): void
     {
         TenantContext::clear();
+        CorrelationId::clear();
     }
 }
