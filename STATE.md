@@ -11,7 +11,7 @@
 `COMMERCIAL VALUE: —` (único slice estructural permitido) · `DoD LEVEL: B` · `DATA CLASSIFICATION: P3`
 
 Estado: esquema, dominio, autorización, auditoría, autenticación y tenant de demostración
-construidos. **380 pruebas, 1.270 aserciones.** Las 216 celdas de la matriz de permisos tienen
+construidos. **425 pruebas, 1.332 aserciones.** Las 243 celdas de la matriz de permisos tienen
 prueba propia, los nueve invariantes del SPEC también, y los siete de la matriz. B4 encontró y
 cerró **una fuga real de datos P3 hacia los ficheros de log**; B5 resolvió el nudo del tenant
 antes de autenticar; B6 dejó un demo con la forma exacta del ancla y sin un solo dato real. El
@@ -19,11 +19,13 @@ DoD de nivel B queda en verde salvo TYPECHECK, sin herramienta por una restricci
 entorno. El harness operativo se cumple solo: un commit con una prueba de aislamiento rota
 **no pasa**, verificado a mano. El colegio ancla dio luz verde al piloto el 23 de agosto de 2026.
 
-**Hay cuatro cosas esperando respuesta humana**, todas en `## Bloqueos`: si la aplicación
-debe poder borrar un tenant, dos huecos de la máquina de estados que B2 interpretó, y **qué
-permisos le corresponden al `rector`**, que la matriz nombra como rol pero deja sin columna.
-Esa última **bloquea el paso B7**, que es el siguiente: su pantalla no se puede diseñar sin
-saber qué ve el rector.
+**Los tres bloqueos de producto se resolvieron el 25 de agosto de 2026** y están cerrados en
+`## Bloqueos` con lo que se decidió y por qué: el `rector` ya tiene columna en la matriz
+—lee lo suyo, no administra—, las dos transiciones que B2 interpretó quedaron confirmadas en
+el SPEC, y la aplicación ya **no puede borrar un tenant**. Con eso, **B7 está desbloqueado**.
+
+Siguen abiertos los dos bloqueos de entorno, que no dependen de una decisión sino de una red
+sin restricciones: `docker compose up` sin ejecutar y la compuerta TYPECHECK sin herramienta.
 
 > **`PLAN.md` es el documento que se ejecuta.** Un paso por sesión, en orden, marcando la casilla
 > y haciendo commit al terminar cada uno.
@@ -745,6 +747,9 @@ debería es peor que no tenerla. Las sondas se revirtieron.
 | 2026-08-23 | Sesión, caché y colas en Redis para no crear tablas de personas sin `tenant_id` | A1, arriba |
 | 2026-08-25 | La planta física de la sede (aulas, área construida, área de lote) entra en `sites` como P1 | B6 · `core-entities.md` |
 | 2026-08-25 | El tenant demo se llama `colegio-demo` y el de aislamiento `colegio-vecino`; sembrar dos veces se niega | B6, arriba |
+| 2026-08-25 | El `rector` lee lo suyo y no administra: personas, relaciones, matrícula, reportes y auditoría; nada de altas, bajas, catálogo ni plataforma | `permissions.md` · bloqueo 5 |
+| 2026-08-25 | Confirmadas `SUSPENDED → ACTIVE` (evento propio) y `SUSPENDED → ENDED` | `specs/identity/SPEC.md` · bloqueo 4 |
+| 2026-08-25 | La aplicación **no** puede borrar un tenant: `DELETE` y `TRUNCATE` revocados | migración `2026_08_25_000300` · bloqueo 3 |
 
 ## Bloqueos
 
@@ -782,72 +787,75 @@ que no se ejecutó. A2 tampoco pudo cerrarlo: la restricción es del entorno, no
 > `composer require --dev larastan/larastan` y un `phpstan.neon` en nivel 5 como mínimo.
 > Es lo único que queda abierto de la Etapa A.
 
-### 3. Decisión de producto pendiente — ¿puede la aplicación borrar un tenant?
+### 3. ~~¿Puede la aplicación borrar un tenant?~~ — **resuelto el 25-ago-2026: no**
 
-Encontrado en la auditoría de B1, **no corregido a propósito**: los doce `FOREIGN KEY` que
-apuntan a `tenants` son `ON DELETE CASCADE`, y `platform_app` tiene `DELETE` sobre `tenants`
-por los privilegios por defecto del script de roles. Un solo `DELETE FROM tenants` desde la
-aplicación destruye organización, sedes, personas, identidades, relaciones, asignaciones,
-usuarios, roles y matrículas de ese tenant, sin vuelta atrás.
+Decisión humana: **revocar `DELETE` y `TRUNCATE` sobre `tenants` al rol de aplicación.**
+Implementado en `database/migrations/2026_08_25_000300_revoke_tenant_deletion.php`.
 
-Lo que sí está bien resuelto: `audit_events` **no** tiene `FOREIGN KEY` a `tenants`, así que
-la auditoría sobrevive al borrado. Eso sostiene la retención de 5 años de
-`data-classification.md` y parece deliberado.
+El hallazgo venía de B1: los doce `FOREIGN KEY` que apuntan a `tenants` son
+`ON DELETE CASCADE` y `platform_app` tenía `DELETE` por los privilegios por defecto del
+script de roles. Un solo `DELETE FROM tenants` desde código de producto destruía
+organización, sedes, personas, identidades, relaciones, asignaciones, usuarios, roles y
+matrículas, sin vuelta atrás.
 
-No se toca porque es una decisión de producto y de derecho, no una de ingeniería, y §5 de
-`CLAUDE.md` dice que eso se pregunta en vez de improvisarlo:
+`TRUNCATE` entra en la misma revocación porque vacía la tabla **sin** disparar la cascada ni
+las políticas de RLS: dejarlo concedido habría sido la misma puerta con otro nombre.
 
-- **Recomendación:** revocar `DELETE` sobre `tenants` al rol de aplicación. Nadie lo usa hoy,
-  el ciclo de vida ya se expresa con `tenants.status`, y darlo de baja convierte una
-  operación irreversible en imposible desde el código de producto.
-- **Contra:** el derecho de supresión del titular puede exigir borrado efectivo. Si es así,
-  el borrado debe ser un procedimiento explícito con respaldo previo y responsable
-  identificado, no un privilegio permanente de la aplicación.
+Esto **no** cierra el derecho de supresión del titular. Si hay que suprimir de verdad será un
+procedimiento explícito —respaldo previo, responsable identificado, evento de auditoría—
+ejecutado con el rol dueño, no un privilegio permanente de la aplicación web.
 
-Mientras no haya respuesta, el riesgo sigue abierto y **ningún paso posterior debería
-implementar borrado de tenant**.
+Dos pruebas lo sostienen, y las dos se comprobaron revirtiendo la migración: sin ella
+**fallan**. La reversión también verificó que `down()` funciona, así que CA-12 sigue en pie.
 
-### 4. Dos huecos de la máquina de estados que B2 tuvo que interpretar
+> Una de las dos pruebas hubo que reescribirla: la primera versión ejecutaba
+> `TRUNCATE TABLE tenants CASCADE` y **pasaba con y sin la revocación**, porque falla antes
+> por `organizations`. Ahora comprueba el catálogo de privilegios directamente.
 
-`specs/identity/SPEC.md` define la máquina como
-`PLANNED → ACTIVE → SUSPENDED → ACTIVE` y `ACTIVE → ENDED (terminal)`, pero su **tabla** de
-transiciones solo declara tres filas. Dos caminos del diagrama quedan sin actor,
-precondiciones ni evento de auditoría, y B2 no podía dejarlos sin implementar:
+### 4. ~~Dos huecos de la máquina de estados~~ — **confirmados el 25-ago-2026**
 
-- **`SUSPENDED → ACTIVE`** — implementado como `ReactivateRelationship`, con evento propio
-  `relationship.reactivated` en vez de reutilizar `relationship.activated`. Reanudar no es
-  activar por primera vez y la auditoría tiene que poder distinguirlos.
-- **`SUSPENDED → ENDED`** — admitido, aunque la tabla solo contemple cerrar desde `ACTIVE`.
-  Respetarla al pie de la letra dejaría una relación suspendida sin forma de cerrarse:
-  habría que reactivarla para terminarla, que es peor y ensucia la auditoría.
+Decisión humana: **se confirman las dos interpretaciones de B2**, y las filas ya están en la
+tabla de `specs/identity/SPEC.md` con actor, precondiciones, efectos y evento de auditoría.
 
-Las dos son interpretaciones defendibles, pero son **mías, no del SPEC**. Hace falta
-confirmarlas o corregirlas —y en su caso añadir las filas a la tabla del SPEC con actor y
-precondiciones— antes de B9.
+- **`SUSPENDED → ACTIVE`** — `ReactivateRelationship`, con evento propio
+  `relationship.reactivated`. Reanudar no es activar por primera vez: quien lea la auditoría
+  necesita distinguir un alta de una vuelta al trabajo, y no significan lo mismo ni para la
+  antigüedad ni ante una inspección.
+- **`SUSPENDED → ENDED`** — admitido. Lo contrario dejaba una relación suspendida sin forma
+  de cerrarse: habría que reactivarla para terminarla, registrando en la auditoría una vuelta
+  al trabajo que nunca ocurrió.
 
-### 5. `rector` es un rol sin permisos — y bloquea su pantalla del paso B7
+El diagrama del SPEC dibuja ahora también el cierre desde `SUSPENDED`, que antes no aparecía
+ni en el diagrama ni en la tabla. El código no cambió: era correcto, le faltaba el respaldo
+del documento.
 
-`docs/architecture/permissions.md` lo lista en «Roles y alcance» con alcance
-`legal_entity` y techo P3, pero **no tiene columna en la matriz recurso × acción**. No hay
-ninguna celda que diga qué puede hacer.
+### 5. ~~`rector` es un rol sin permisos~~ — **resuelto el 25-ago-2026. B7 desbloqueado**
 
-B3 no le inventa permisos: la matriz falla cerrada, así que hoy el rector no puede hacer
-nada. Hay prueba que lo deja constante y visible, no como un olvido silencioso.
+Decisión humana: **liderazgo, no administración de RR. HH.** La columna ya está en
+`docs/architecture/permissions.md` y en `PermissionMatrix`, con las 27 celdas probadas.
 
-Esto importa pronto: `PLAN.md` B7 pide diseñar «MY WORK del rector», y no se puede diseñar
-la bandeja de alguien que no tiene permisos definidos.
+Ve a su gente y sus cifras: lista personas y relaciones, lee los datos P3 con propósito
+declarado, consulta la matrícula, genera y exporta el C600 y el EVI —que en la vida real
+firma él— y lee la auditoría. No da de alta ni de baja a nadie, no toca cargos, sedes ni
+entidades jurídicas, no carga matrícula, y no gestiona usuarios, roles, ajustes del tenant
+ni el DPA.
 
-- La descripción dice «alias de dirección», y comparte alcance y techo con `admin_rrhh`.
-  La lectura más probable es que sea liderazgo y no administración de RR. HH.: vería
-  personas, relaciones, matrícula y reportes, pero no gestionaría usuarios ni el DPA.
-- **Es una suposición mía y no la implemento.** Hace falta que alguien añada la columna al
-  documento antes de B7.
+Que **no cierre relaciones** es deliberado: terminar un vínculo laboral tiene efecto jurídico
+y la regla 5 de `CLAUDE.md` exige responsable identificado. El rector lo decide como
+directivo; RR. HH. lo ejecuta en el sistema, y así la auditoría distingue las dos cosas en
+vez de fundirlas en un solo evento.
+
+La prueba que dejaba constancia del hueco se reemplazó por dos que fijan la frontera por sus
+dos lados: qué puede y qué no. La matriz celda a celda sigue en `PermissionMatrixTest`, que
+ahora cotejará 243 celdas contra el documento en vez de 216.
+
 
 ## Deuda conocida
 
 | Qué | Por qué importa | Cuándo se paga |
 |---|---|---|
 | El seeder del ancla se ejecuta entero una vez por prueba que lo necesita: ~1,1 s × 11, unos 13 s de los 45 que tarda la suite | No es incorrecto, pero es el tramo más caro y crecerá con cada prueba que se apoye en el demo | Cuando estorbe: sembrar una vez por fichero y aislar con transacción, o reducir la plantilla a una muestra proporcional |
+| El rector lee la auditoría de todo el tenant, no solo la de su entidad jurídica | `audit_events` no tiene `legal_entity_id`, así que su alcance `legal_entity` no la puede filtrar. En el ancla, con una sola entidad, coinciden; en un tenant con varias, no | Cuando exista un tenant multi-entidad: llevar la entidad al evento de auditoría, o resolver el alcance a través del recurso |
 | Compuerta TYPECHECK sin herramienta | Es una de las seis del DoD nivel A. A2 no pudo cerrarla: `api.github.com` bloqueado | Primera sesión con red sin restricción |
 | En acciones de colección —listar, crear— no hay `resourceTenantId` que comparar y esa comprobación se salta | La protección por fila queda en el global scope y la RLS, que sí la cubren con 30 pruebas. Hueco teórico: una Policy con la instancia delante que olvide pasar su `tenant_id` | Cuando existan controladores reales (B8): que el contexto se construya desde el modelo y no a mano |
 | TOTP implementado en el repositorio en vez de con una librería | `api.github.com` está bloqueado y no se puede instalar ninguna. Está verificado contra los seis vectores del RFC 6238, pero una librería mantenida recibe revisiones que este código no | Cuando la red lo permita: sustituir por dentro; las pruebas del RFC siguen valiendo |
@@ -877,10 +885,10 @@ la bandeja de alguien que no tiene permisos definidos.
 Skill **`design`**, obligatoria en este paso (`docs/skills.md`: el diseño va antes de escribir
 frontend). DoD nivel A.
 
-> **Está bloqueado, y hay que resolverlo antes de empezar.** B7 diseña, entre otras, la
-> pantalla del **rector**, y `docs/architecture/permissions.md` lo nombra como rol pero **no le
-> da columna en la matriz**. No se puede dibujar qué ve alguien de quien no está escrito qué
-> puede ver. Es el bloqueo 5 de `## Bloqueos`: **preguntar antes de diseñar**, no interpretar.
+**Ya no está bloqueado.** El `rector` tenía que tener permisos antes de poder diseñar su
+pantalla, y los tiene desde el 25 de agosto: lee personas, relaciones, matrícula, reportes y
+auditoría; no administra. Su MY WORK es una bandeja de consulta y emisión, no de gestión —y
+eso cambia el diseño, no solo los permisos: no lleva botones de alta ni de baja—.
 
 Lo que hay disponible para el diseño, ya construido y probado:
 
@@ -889,7 +897,7 @@ Lo que hay disponible para el diseño, ya construido y probado:
   pueden diseñar sobre datos con la forma verdadera en vez de sobre `lorem ipsum`, que es
   media razón por la que B6 va antes que B7.
 - `docs/ux/design-system.md`, `docs/ux/personas.md` y `docs/ux/journeys.md`, de la Fase Cero.
-- La matriz de permisos: qué ve cada rol, salvo el hueco del rector.
+- La matriz de permisos **completa**: qué ve cada rol, los nueve, con prueba por celda.
 
 Cosas del terreno que conviene saber antes de empezar:
 
@@ -901,6 +909,8 @@ Cosas del terreno que conviene saber antes de empezar:
   la regla `email` por defecto—.
 - Solo hay Policies para `Person`, `Relationship` y `AuditEvent`. La matriz declara 17
   recursos: lo que se diseñe para el resto habrá que autorizarlo llamando al `Authorizer`.
+- **Ninguna pantalla puede ofrecer borrar un tenant**: la aplicación ya no puede, por
+  decisión del 25 de agosto. Dar de baja se dibuja como cambio de `status`.
 
 > **Nota de entorno para quien retome:** sin Docker, los servicios locales se levantan con
 > `pg_ctlcluster 16 main start` y `redis-server --daemonize yes`. La base `platform` y los dos

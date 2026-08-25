@@ -14,8 +14,9 @@ use App\Domains\Shared\Domain\DataClassification;
  * que se lee al lado del documento y se compara con él de un vistazo.
  *
  * Falla cerrada: lo que no está declarado, se deniega. Un recurso nuevo no nace accesible
- * por descuido, y un rol sin columna —hoy `rector`— no obtiene nada hasta que alguien
- * decida qué le corresponde.
+ * por descuido, y un rol sin columna no obtiene nada hasta que alguien decida qué le
+ * corresponde. Así estuvo `rector` entre B3 y B6, hasta que se decidió: lee lo suyo, no
+ * administra. La frontera y su porqué están en `permissions.md`, no aquí.
  */
 final class PermissionMatrix
 {
@@ -32,6 +33,7 @@ final class PermissionMatrix
                 'owner' => Permission::Allow,
                 'admin_rrhh' => Permission::Allow,
                 'responsable_sst' => Permission::Allow,
+                'rector' => Permission::Allow,
                 'coordinador' => Permission::Allow,
                 'jefe_area' => Permission::Allow,
                 'trabajador' => Permission::AllowSelf,
@@ -53,6 +55,7 @@ final class PermissionMatrix
                 'owner' => Permission::AllowWithPurpose,
                 'admin_rrhh' => Permission::AllowWithPurpose,
                 'responsable_sst' => Permission::AllowWithPurpose,
+                'rector' => Permission::AllowWithPurpose,
                 'trabajador' => Permission::AllowSelf,
             ],
         ],
@@ -62,6 +65,7 @@ final class PermissionMatrix
                 'owner' => Permission::AllowWithPurpose,
                 'admin_rrhh' => Permission::AllowWithPurpose,
                 'responsable_sst' => Permission::AllowWithPurpose,
+                'rector' => Permission::AllowWithPurpose,
                 'trabajador' => Permission::AllowSelf,
             ],
         ],
@@ -71,6 +75,7 @@ final class PermissionMatrix
                 'owner' => Permission::AllowWithPurpose,
                 'admin_rrhh' => Permission::AllowWithPurpose,
                 'responsable_sst' => Permission::AllowWithPurpose,
+                'rector' => Permission::AllowWithPurpose,
                 'trabajador' => Permission::AllowSelf,
             ],
         ],
@@ -85,6 +90,7 @@ final class PermissionMatrix
                 'admin_rrhh' => Permission::Allow,
             ],
             'listar' => [
+                'rector' => Permission::Allow,
                 'owner' => Permission::Allow,
                 'admin_rrhh' => Permission::Allow,
                 'responsable_sst' => Permission::Allow,
@@ -126,6 +132,7 @@ final class PermissionMatrix
 
         'enrollment_snapshots' => [
             'leer' => [
+                'rector' => Permission::Allow,
                 'owner' => Permission::Allow,
                 'admin_rrhh' => Permission::Allow,
                 'responsable_sst' => Permission::Allow,
@@ -145,16 +152,21 @@ final class PermissionMatrix
             ],
         ],
 
+        // El rector genera y exporta los reportes que en la vida real firma él: el C600
+        // y el EVI salen con su nombre. Que pudiera consultarlos pero no emitirlos
+        // obligaría a pedirle la firma a alguien que no los generó.
         'reports.c600' => [
             'generar' => [
                 'owner' => Permission::Allow,
                 'admin_rrhh' => Permission::Allow,
+                'rector' => Permission::Allow,
                 'coordinador' => Permission::Allow,
             ],
             'exportar' => [
                 'owner' => Permission::Allow,
                 'admin_rrhh' => Permission::Allow,
                 'responsable_sst' => Permission::Allow,
+                'rector' => Permission::Allow,
                 'auditor' => Permission::Allow,
             ],
         ],
@@ -164,11 +176,13 @@ final class PermissionMatrix
                 'owner' => Permission::Allow,
                 'admin_rrhh' => Permission::Allow,
                 'responsable_sst' => Permission::Allow,
+                'rector' => Permission::Allow,
             ],
             'exportar' => [
                 'owner' => Permission::Allow,
                 'admin_rrhh' => Permission::Allow,
                 'responsable_sst' => Permission::Allow,
+                'rector' => Permission::Allow,
                 'auditor' => Permission::Allow,
             ],
         ],
@@ -184,6 +198,11 @@ final class PermissionMatrix
         'audit_events' => [
             'leer' => [
                 'owner' => Permission::Allow,
+                // Límite conocido: `audit_events` no tiene `legal_entity_id`, así que el
+                // alcance `legal_entity` del rector no lo filtra y en un tenant con varias
+                // entidades vería la traza entera. En el ancla hay una sola. Deuda en
+                // STATE.md; se cierra cuando la auditoría lleve la entidad.
+                'rector' => Permission::Allow,
                 'auditor' => Permission::Allow,
             ],
             // Fila de solo denegaciones. Está escrita en vez de omitida porque decir

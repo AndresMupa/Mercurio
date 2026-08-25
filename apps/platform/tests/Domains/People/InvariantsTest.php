@@ -181,6 +181,48 @@ it('invariante 6 · y la base lo impide aunque el modelo no estuviera', function
         ->toThrow(QueryException::class);
 })->group('tenant-isolation');
 
+// ── Borrado de tenant, revocado por decisión humana el 25-ago-2026 ──────────
+it('la aplicación no puede borrar un tenant, y por tanto no puede arrasar en cascada', function () {
+    // Los doce FOREIGN KEY que apuntan a `tenants` son ON DELETE CASCADE. Mientras
+    // `platform_app` tuvo DELETE sobre la tabla, un solo DELETE FROM tenants destruía
+    // todo lo del tenant sin vuelta atrás. La decisión fue revocarlo: el ciclo de vida
+    // se expresa con `tenants.status`, y suprimir de verdad será un procedimiento
+    // explícito con el rol dueño, no un privilegio permanente de la aplicación.
+    $tenant = createTenant('colegio-para-borrar');
+    TenantContext::set($tenant->id);
+
+    expect(fn () => DB::table('tenants')->where('id', $tenant->id)->delete())
+        ->toThrow(QueryException::class);
+
+    // Y sigue ahí: la RLS deja ver la propia fila, así que si el DELETE hubiera pasado
+    // esto daría cero y la prueba distinguiría «lo impidió» de «no lo intentó».
+    expect(DB::table('tenants')->where('id', $tenant->id)->count())->toBe(1);
+})->group('tenant-isolation');
+
+it('el rol de aplicación no conserva ni DELETE ni TRUNCATE sobre tenants', function () {
+    // Se comprueba en el catálogo y no ejecutando un TRUNCATE porque un
+    // `TRUNCATE tenants CASCADE` falla antes por otra tabla —`organizations`— y pasaría
+    // igual sin la revocación. Verificado con una sonda: una prueba que pasa por el
+    // motivo equivocado no prueba lo que dice probar.
+    //
+    // TRUNCATE importa aparte de DELETE: vacía la tabla sin disparar `ON DELETE CASCADE`
+    // ni las políticas de RLS, así que dejarlo concedido sería la misma puerta con otro
+    // nombre.
+    $privilegios = DB::connection('pgsql_owner')
+        ->table('information_schema.table_privileges')
+        ->where('table_name', 'tenants')
+        ->where('grantee', config('database.connections.pgsql.username'))
+        ->pluck('privilege_type')
+        ->all();
+
+    expect($privilegios)->not->toContain('DELETE')
+        ->and($privilegios)->not->toContain('TRUNCATE')
+        // Y sigue pudiendo trabajar: revocar de más rompería el aprovisionamiento.
+        ->and($privilegios)->toContain('SELECT')
+        ->and($privilegios)->toContain('INSERT')
+        ->and($privilegios)->toContain('UPDATE');
+})->group('tenant-isolation');
+
 // ── Invariante 7 ────────────────────────────────────────────────────────────
 it('invariante 7 · el registro de clasificación sabe qué columnas son P3', function () {
     // El invariante completo —«toda lectura P3 declara purpose»— se cierra en B3 con el

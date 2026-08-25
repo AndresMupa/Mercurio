@@ -35,7 +35,7 @@ use App\Domains\Shared\TenantContext;
  *   's'     ✓ˢ solo sobre sí mismo
  *   'no'    —  denegado
  */
-const ROLES = ['owner', 'admin_rrhh', 'responsable_sst', 'coordinador',
+const ROLES = ['owner', 'admin_rrhh', 'responsable_sst', 'rector', 'coordinador',
     'jefe_area', 'trabajador', 'auditor', 'soporte_plataforma'];
 
 /** @return array<string, array{0:string,1:string,2:string,3:array<string,string>}> */
@@ -46,85 +46,85 @@ function celdasDeLaMatriz(): array
     return [
         // recurso, acción, clasificación, [rol => esperado]
         'people · listar' => ['people', 'listar', DataClassification::P2,
-            $fila(['si', 'si', 'si', 'si', 'si', 's', 'si', 'no'])],
+            $fila(['si', 'si', 'si', 'si', 'si', 'si', 's', 'si', 'no'])],
 
         'people.birth_date · leer' => ['people.birth_date', 'leer', DataClassification::P3,
-            $fila(['p', 'p', 'p', 'no', 'no', 's', 'no', 'no'])],
+            $fila(['p', 'p', 'p', 'p', 'no', 'no', 's', 'no', 'no'])],
 
         'people.sex · leer' => ['people.sex', 'leer', DataClassification::P3,
-            $fila(['p', 'p', 'p', 'no', 'no', 's', 'no', 'no'])],
+            $fila(['p', 'p', 'p', 'p', 'no', 'no', 's', 'no', 'no'])],
 
         'identities.document_number · leer' => ['identities.document_number', 'leer', DataClassification::P3,
-            $fila(['p', 'p', 'p', 'no', 'no', 's', 'no', 'no'])],
+            $fila(['p', 'p', 'p', 'p', 'no', 'no', 's', 'no', 'no'])],
 
         'people · crear' => ['people', 'crear', DataClassification::P2,
-            $fila(['si', 'si', 'no', 'no', 'no', 'no', 'no', 'no'])],
+            $fila(['si', 'si', 'no', 'no', 'no', 'no', 'no', 'no', 'no'])],
 
         'people · editar' => ['people', 'editar', DataClassification::P2,
-            $fila(['si', 'si', 'no', 'no', 'no', 'no', 'no', 'no'])],
+            $fila(['si', 'si', 'no', 'no', 'no', 'no', 'no', 'no', 'no'])],
 
         'relationships · crear' => ['relationships', 'crear', DataClassification::P2,
-            $fila(['si', 'si', 'no', 'no', 'no', 'no', 'no', 'no'])],
+            $fila(['si', 'si', 'no', 'no', 'no', 'no', 'no', 'no', 'no'])],
 
         'relationships · cerrar' => ['relationships', 'cerrar', DataClassification::P2,
-            $fila(['si', 'si', 'no', 'no', 'no', 'no', 'no', 'no'])],
+            $fila(['si', 'si', 'no', 'no', 'no', 'no', 'no', 'no', 'no'])],
 
         'relationships · listar' => ['relationships', 'listar', DataClassification::P2,
-            $fila(['si', 'si', 'si', 'si', 'si', 's', 'si', 'no'])],
+            $fila(['si', 'si', 'si', 'si', 'si', 'si', 's', 'si', 'no'])],
 
         'assignments · gestionar' => ['assignments', 'gestionar', DataClassification::P2,
-            $fila(['si', 'si', 'no', 'si', 'no', 'no', 'no', 'no'])],
+            $fila(['si', 'si', 'no', 'no', 'si', 'no', 'no', 'no', 'no'])],
 
         'positions · gestionar' => ['positions', 'gestionar', DataClassification::P1,
-            $fila(['si', 'si', 'no', 'no', 'no', 'no', 'no', 'no'])],
+            $fila(['si', 'si', 'no', 'no', 'no', 'no', 'no', 'no', 'no'])],
 
         'sites · gestionar' => ['sites', 'gestionar', DataClassification::P1,
-            $fila(['si', 'si', 'no', 'no', 'no', 'no', 'no', 'no'])],
+            $fila(['si', 'si', 'no', 'no', 'no', 'no', 'no', 'no', 'no'])],
 
         'legal_entities · gestionar' => ['legal_entities', 'gestionar', DataClassification::P1,
-            $fila(['si', 'si', 'no', 'no', 'no', 'no', 'no', 'no'])],
+            $fila(['si', 'si', 'no', 'no', 'no', 'no', 'no', 'no', 'no'])],
 
         'enrollment_snapshots · leer' => ['enrollment_snapshots', 'leer', DataClassification::P1,
-            $fila(['si', 'si', 'si', 'si', 'no', 'no', 'si', 'si'])],
+            $fila(['si', 'si', 'si', 'si', 'si', 'no', 'no', 'si', 'si'])],
 
         'enrollment_snapshots · cargar' => ['enrollment_snapshots', 'cargar', DataClassification::P1,
-            $fila(['si', 'si', 'no', 'si', 'no', 'no', 'no', 'no'])],
+            $fila(['si', 'si', 'no', 'no', 'si', 'no', 'no', 'no', 'no'])],
 
         'enrollment_snapshots · editar' => ['enrollment_snapshots', 'editar', DataClassification::P1,
-            $fila(['si', 'si', 'no', 'si', 'no', 'no', 'no', 'no'])],
+            $fila(['si', 'si', 'no', 'no', 'si', 'no', 'no', 'no', 'no'])],
 
         'reports.c600 · generar' => ['reports.c600', 'generar', DataClassification::P1,
-            $fila(['si', 'si', 'no', 'si', 'no', 'no', 'no', 'no'])],
+            $fila(['si', 'si', 'no', 'si', 'si', 'no', 'no', 'no', 'no'])],
 
         'reports.evi · generar' => ['reports.evi', 'generar', DataClassification::P1,
-            $fila(['si', 'si', 'si', 'no', 'no', 'no', 'no', 'no'])],
+            $fila(['si', 'si', 'si', 'si', 'no', 'no', 'no', 'no', 'no'])],
 
         'reports.c600 · exportar' => ['reports.c600', 'exportar', DataClassification::P1,
-            $fila(['si', 'si', 'si', 'no', 'no', 'no', 'si', 'no'])],
+            $fila(['si', 'si', 'si', 'si', 'no', 'no', 'no', 'si', 'no'])],
 
         'reports.evi · exportar' => ['reports.evi', 'exportar', DataClassification::P1,
-            $fila(['si', 'si', 'si', 'no', 'no', 'no', 'si', 'no'])],
+            $fila(['si', 'si', 'si', 'si', 'no', 'no', 'no', 'si', 'no'])],
 
         'users · gestionar' => ['users', 'gestionar', DataClassification::P2,
-            $fila(['si', 'no', 'no', 'no', 'no', 'no', 'no', 'no'])],
+            $fila(['si', 'no', 'no', 'no', 'no', 'no', 'no', 'no', 'no'])],
 
         'role_assignments · gestionar' => ['role_assignments', 'gestionar', DataClassification::P1,
-            $fila(['si', 'no', 'no', 'no', 'no', 'no', 'no', 'no'])],
+            $fila(['si', 'no', 'no', 'no', 'no', 'no', 'no', 'no', 'no'])],
 
         'audit_events · leer' => ['audit_events', 'leer', DataClassification::P2,
-            $fila(['si', 'no', 'no', 'no', 'no', 'no', 'si', 'no'])],
+            $fila(['si', 'no', 'no', 'si', 'no', 'no', 'no', 'si', 'no'])],
 
         'audit_events · modificar' => ['audit_events', 'modificar', DataClassification::P2,
-            $fila(['no', 'no', 'no', 'no', 'no', 'no', 'no', 'no'])],
+            $fila(['no', 'no', 'no', 'no', 'no', 'no', 'no', 'no', 'no'])],
 
         'audit_events · borrar' => ['audit_events', 'borrar', DataClassification::P2,
-            $fila(['no', 'no', 'no', 'no', 'no', 'no', 'no', 'no'])],
+            $fila(['no', 'no', 'no', 'no', 'no', 'no', 'no', 'no', 'no'])],
 
         'tenant.settings · gestionar' => ['tenant.settings', 'gestionar', DataClassification::P1,
-            $fila(['si', 'no', 'no', 'no', 'no', 'no', 'no', 'no'])],
+            $fila(['si', 'no', 'no', 'no', 'no', 'no', 'no', 'no', 'no'])],
 
         'dpa · gestionar' => ['dpa', 'gestionar', DataClassification::P1,
-            $fila(['si', 'no', 'no', 'no', 'no', 'no', 'no', 'no'])],
+            $fila(['si', 'no', 'no', 'no', 'no', 'no', 'no', 'no', 'no'])],
     ];
 }
 

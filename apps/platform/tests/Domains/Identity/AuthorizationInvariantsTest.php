@@ -344,24 +344,56 @@ it('ningún rol de esta matriz alcanza P4 por herencia', function () {
         ->and($decision->rule)->toBe('abac.techo');
 })->group('authorization');
 
-// ── Hueco del documento ─────────────────────────────────────────────────────
-it('rector no obtiene nada: la matriz lo declara como rol pero no le da columna', function (string $recurso, string $accion) {
-    // `permissions.md` lista `rector` en «Roles y alcance» con alcance legal_entity y
-    // techo P3, pero **no tiene columna** en la matriz recurso × acción. No se le
-    // inventan permisos: se deniega, que es lo único seguro cuando el documento calla.
-    //
-    // Esto bloquea el MY WORK del rector del paso B7. Registrado en STATE.md para que
-    // alguien decida qué le corresponde antes de diseñar esa pantalla.
+// ── La frontera del rector ──────────────────────────────────────────────────
+//
+// Decidido el 25-ago-2026, cerrando el hueco que B3 dejó visible y que bloqueaba B7:
+// **liderazgo, no administración de RR. HH.** Estas dos pruebas fijan la frontera por
+// los dos lados. La matriz celda a celda ya está en `PermissionMatrixTest`; lo que se
+// comprueba aquí es que la línea siga donde se decidió y no se corra sin querer.
+
+it('el rector ve a su gente y sus cifras', function (string $recurso, string $accion, ?Purpose $proposito) {
+    $rector = actor($this, 'rector');
+
+    $decision = $this->authorizer->authorize(
+        contexto($this, $rector, $recurso, $accion, ['purpose' => $proposito])
+    );
+
+    expect($decision->allowed)->toBeTrue("el rector debería poder «{$accion}» sobre «{$recurso}»");
+})->with([
+    'listar personas' => ['people', 'listar', null],
+    'leer la fecha de nacimiento con propósito' => ['people.birth_date', 'leer', Purpose::GestionLaboral],
+    'listar relaciones' => ['relationships', 'listar', null],
+    'consultar la matrícula' => ['enrollment_snapshots', 'leer', null],
+    'generar el C600' => ['reports.c600', 'generar', null],
+    'generar el EVI' => ['reports.evi', 'generar', null],
+    'exportar reportes' => ['reports.c600', 'exportar', null],
+    'leer la auditoría' => ['audit_events', 'leer', null],
+])->group('authorization');
+
+it('el rector no administra: ni personal, ni catálogo, ni la plataforma', function (string $recurso, string $accion) {
+    // `relationships · cerrar` está aquí a propósito y no es un descuido: terminar un
+    // vínculo laboral tiene efecto jurídico y la regla 5 de CLAUDE.md exige responsable
+    // identificado. El rector lo decide como directivo; RR. HH. lo ejecuta, y así la
+    // auditoría distingue las dos cosas en vez de fundirlas en un solo evento.
     $rector = actor($this, 'rector');
 
     $decision = $this->authorizer->authorize(contexto($this, $rector, $recurso, $accion));
 
-    expect($decision->allowed)->toBeFalse();
+    expect($decision->allowed)->toBeFalse("el rector no debería poder «{$accion}» sobre «{$recurso}»")
+        ->and($decision->rule)->toBe('matrix.deny');
 })->with([
-    ['people', 'listar'],
-    ['relationships', 'listar'],
-    ['enrollment_snapshots', 'leer'],
-    ['reports.evi', 'generar'],
+    'crear personas' => ['people', 'crear'],
+    'editar personas' => ['people', 'editar'],
+    'crear relaciones' => ['relationships', 'crear'],
+    'cerrar relaciones' => ['relationships', 'cerrar'],
+    'gestionar asignaciones' => ['assignments', 'gestionar'],
+    'gestionar cargos' => ['positions', 'gestionar'],
+    'gestionar sedes' => ['sites', 'gestionar'],
+    'cargar matrícula' => ['enrollment_snapshots', 'cargar'],
+    'gestionar usuarios' => ['users', 'gestionar'],
+    'gestionar roles' => ['role_assignments', 'gestionar'],
+    'gestionar el DPA' => ['dpa', 'gestionar'],
+    'modificar la auditoría' => ['audit_events', 'modificar'],
 ])->group('authorization');
 
 // ── Hallazgos del threat model de B3 ────────────────────────────────────────

@@ -35,7 +35,8 @@ identificados (ADR 0003).
 
 ```
 PLANNED → ACTIVE → SUSPENDED → ACTIVE
-                 ↘ ENDED (terminal)
+                 ↘        ↘
+                   ENDED (terminal)
 ```
 
 | Transición | Actor | Precondiciones | Efectos | Auditoría |
@@ -43,7 +44,23 @@ PLANNED → ACTIVE → SUSPENDED → ACTIVE
 | `PLANNED → ACTIVE` | admin_rrhh, owner | `valid_from <= hoy`, persona con identidad | habilita acceso y bandejas | `relationship.activated` |
 | `ACTIVE → SUSPENDED` | admin_rrhh, owner | motivo obligatorio | suspende accesos derivados | `relationship.suspended` |
 | `ACTIVE → ENDED` | admin_rrhh, owner | `valid_to` informado | revoca accesos en la siguiente petición | `relationship.ended` |
+| `SUSPENDED → ACTIVE` | admin_rrhh, owner | motivo de la suspensión resuelto y registrado | restablece accesos derivados | `relationship.reactivated` |
+| `SUSPENDED → ENDED` | admin_rrhh, owner | `valid_to` informado | revoca accesos en la siguiente petición | `relationship.ended` |
 | cualquiera → borrado | — | **prohibido** | — | — |
+
+Las dos transiciones desde `SUSPENDED` se añadieron el 25 de agosto de 2026, confirmando la
+interpretación que B2 tuvo que hacer para no dejar la máquina a medias. `SUSPENDED → ACTIVE`
+estaba en el diagrama pero no en la tabla; `SUSPENDED → ENDED` no estaba en ninguno de los dos.
+
+**Reanudar no es activar por primera vez**, así que `SUSPENDED → ACTIVE` tiene evento propio
+—`relationship.reactivated`— en vez de reutilizar `relationship.activated`. Quien lea la
+auditoría necesita poder distinguir un alta de una vuelta al trabajo: no significan lo mismo
+ni para el cómputo de antigüedad ni para una inspección.
+
+**`SUSPENDED → ENDED` se admite** aunque la máquina original solo contemplara cerrar desde
+`ACTIVE`. Respetar aquello al pie de la letra dejaba una relación suspendida sin forma de
+cerrarse: habría que reactivarla para terminarla, lo que obligaría a registrar en la
+auditoría una vuelta al trabajo que nunca ocurrió.
 
 ## Criterios de aceptación
 
