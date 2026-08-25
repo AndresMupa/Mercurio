@@ -7,7 +7,7 @@
 
 ## Slice actual
 
-**Slice 0 — Foundation** · **A1, A2, B1, B2, B3, B4, B5 y B6 completos**, siguiente **B7** de `PLAN.md`
+**Slice 0 — Foundation** · **A1 … B6 completos**; **B7 entregado y esperando aprobación**
 `COMMERCIAL VALUE: —` (único slice estructural permitido) · `DoD LEVEL: B` · `DATA CLASSIFICATION: P3`
 
 Estado: esquema, dominio, autorización, auditoría, autenticación y tenant de demostración
@@ -26,6 +26,9 @@ el SPEC, y la aplicación ya **no puede borrar un tenant**. Con eso, **B7 está 
 
 Siguen abiertos los dos bloqueos de entorno, que no dependen de una decisión sino de una red
 sin restricciones: `docker compose up` sin ejecutar y la compuerta TYPECHECK sin herramienta.
+
+**Lo que hace falta ahora es humano, no técnico:** el lienzo de B7 está entregado y
+**B8 no empieza hasta que alguien lo apruebe o lo corrija**. Enlace y detalle en el paso B7.
 
 > **`PLAN.md` es el documento que se ejecuta.** Un paso por sesión, en orden, marcando la casilla
 > y haciendo commit al terminar cada uno.
@@ -731,6 +734,66 @@ debería es peor que no tenerla. Las sondas se revirtieron.
 **`TYPECHECK` sigue sin herramienta**, por la restricción de red que arrastra la deuda desde A2.
 
 
+## Paso B7 — lienzo entregado el 25-ago-2026, **pendiente de aprobación**
+
+Doce artboards con las pantallas del Slice 0, sus estados vacíos y sus errores.
+
+**Lienzo:** https://claude.ai/code/artifact/9883cebf-4044-4ea8-a694-ed6c6b496073
+**Fuentes:** `docs/ux/canvas/*.dc.html` + `canvas.json`. El fichero publicado no se versiona
+—2,6 MB de los que casi todo es el editor— y se reconstruye con la skill `design`.
+
+> **La casilla de `PLAN.md` sigue sin marcar a propósito.** El entregable del paso no es «un
+> lienzo», es «un lienzo **revisado y aprobado por el humano** antes de programar». Mientras
+> no haya ese visto bueno, **B8 no empieza**: construir componentes sobre un diseño sin
+> aprobar es exactamente lo que el paso viene a evitar.
+
+### Lo que el lienzo decide
+
+Los colores, radios y escala de espaciado **ya estaban** en `resources/css/app.css` desde A1:
+se levantaron tal cual, sin reinventarlos. Lo que faltaba y aquí se decide:
+
+| Decisión | Cuál |
+|---|---|
+| Tipografía | **IBM Plex Sans + IBM Plex Mono**. Superfamilia real, pensada para interfaz técnica densa, con acentuación española completa. La mono va en documentos, fechas, códigos DANE y toda columna numérica |
+| Escala | 11 · 12,5 · 13 · 14 · 20 · 24, fija. Nada por debajo de 11 px |
+| Datos P3 | **Enmascarados por defecto** en tabla y en ficha. Verlos pasa siempre por el diálogo de propósito: es CA-04 hecho interfaz |
+| Pantalla del rector | **Sin botones de alta ni de baja.** No deshabilitados: ausentes. Un botón gris que nunca se va a poder pulsar es una promesa rota cada vez que se mira |
+| Solapamiento de relaciones | **Advierte, no bloquea** (un traslado el mismo día es legítimo). La sede ajena a la entidad **sí bloquea**: rompe el C600 |
+| Rastro de lectura | Cada persona ve **quién leyó sus datos**, con la misma lista que se le entregaría si la pidiera |
+
+### Los doce artboards
+
+`Main` (decisiones y sistema) · `Login` · `MyWorkTalentoHumano` · `MyWorkRector` ·
+`RectorMovil` · `Personas` · `FichaPersona` · `AltaPersona` (J1 con sus cuatro errores) ·
+`PurposeDialog` · `CierreRelacion` (J5) · `EstadosVacios` · `EstadosError`.
+
+Todos los datos salen del tenant demo de B6: nombres y documentos inventados, cifras reales
+del ancla. Ni una línea de *lorem ipsum*, y ni un dato de una persona real.
+
+### Lo que encontró la segunda pasada
+
+Se revisó el lienzo después de publicarlo, y salieron cinco cosas —cuatro de ellas del tipo
+que un revisor humano habría marcado y que cuesta mucho más arreglar en B8—:
+
+1. **El `canvas.json` corregido se escribió en el directorio equivocado**, así que la primera
+   publicación llevaba la maquetación vieja: notas encima de los títulos y un artboard
+   recortado 5 px. Corregido y republicado.
+2. **La columna ESTADO mezclaba dos cosas**: el estado de la relación y si al expediente le
+   falta un dato. «Incompleta» no es un estado de la máquina. Una columna, un significado:
+   el documento que falta ya se señala en su propia columna y en el borde de la fila.
+3. **Los filtros activos no correspondían con las filas** que se veían debajo.
+4. **Tipo de personal se truncaba** —«Docente orientad…»— por una columna estrecha.
+5. **Siete artboards usaban tipo de 10 y 10,5 px** mientras `Main` declaraba 11 como suelo.
+   El suelo es el suelo: se subieron todos.
+
+### Lo que falta decidir con el humano
+
+Además de aprobar o corregir las seis decisiones de arriba, hay una que el lienzo **no**
+resuelve y B8 va a necesitar: el diálogo de propósito es el único artboard con controles
+vivos. El resto son maquetas estáticas, que es lo que pide un lienzo de revisión; si hace
+falta prototipo navegable para enseñárselo al colegio, es otro encargo.
+
+
 ## Decisiones tomadas
 
 | Fecha | Decisión | Dónde |
@@ -881,39 +944,34 @@ ahora cotejará 243 celdas contra el documento en vez de 216.
 
 ## Próximo paso concreto
 
-**Paso B7 de `PLAN.md`:** diseño de las pantallas del Slice 0, **antes** de construirlas.
-Skill **`design`**, obligatoria en este paso (`docs/skills.md`: el diseño va antes de escribir
-frontend). DoD nivel A.
+**Revisar el lienzo de B7 y decir que sí o qué cambiar.** No es un trámite: las seis
+decisiones que lista `Main` gobiernan todo lo que B8 construya, y cambiarlas después, con los
+componentes ya escritos, cuesta diez veces más.
 
-**Ya no está bloqueado.** El `rector` tenía que tener permisos antes de poder diseñar su
-pantalla, y los tiene desde el 25 de agosto: lee personas, relaciones, matrícula, reportes y
-auditoría; no administra. Su MY WORK es una bandeja de consulta y emisión, no de gestión —y
-eso cambia el diseño, no solo los permisos: no lleva botones de alta ni de baja—.
+https://claude.ai/code/artifact/9883cebf-4044-4ea8-a694-ed6c6b496073
 
-Lo que hay disponible para el diseño, ya construido y probado:
+**Con el visto bueno, sigue B8** —frontend del Slice 0, DoD nivel B incluida la compuerta de
+accesibilidad—. Lo que hay que saber antes de empezarlo:
 
-- **Un tenant demo real que se puede mirar**: `php artisan db:seed`. 64 personas con nombres
-  ficticios, una sede rural con 29 aulas, 883 estudiantes como conteos. Las pantallas se
-  pueden diseñar sobre datos con la forma verdadera en vez de sobre `lorem ipsum`, que es
-  media razón por la que B6 va antes que B7.
-- `docs/ux/design-system.md`, `docs/ux/personas.md` y `docs/ux/journeys.md`, de la Fase Cero.
-- La matriz de permisos **completa**: qué ve cada rol, los nueve, con prueba por celda.
-
-Cosas del terreno que conviene saber antes de empezar:
-
-- El E2E de A2 prueba **una** pantalla (`FoundationCheck`) y comprueba tres cosas que el
-  diseño no puede romper: que Vue monta, que el estado **no depende solo del color**, y que
-  se opera con teclado. Cualquier pantalla nueva hereda esas tres.
-- No hay pantallas de autenticación todavía: B5 construyó el flujo, **B8 construye el
-  formulario**. Y ahí es donde entra la deuda del CVE-2026-48019 —`email:rfc,strict`, nunca
-  la regla `email` por defecto—.
+- Los componentes base se construyen **en el orden de `design-system.md`**: AppShell,
+  MyWorkInbox, DataTable, FilterBar, StatusPill, OwnerChip, DueDateBadge, PurposeDialog,
+  EmptyState, ConfirmWithImpact, WizardStepper, BulkImport. Sin lógica de negocio dentro.
+- **Ahí entra la deuda del CVE-2026-48019**: el formulario de acceso valida correos, así que
+  `email:rfc,strict`, nunca la regla `email` por defecto.
 - Solo hay Policies para `Person`, `Relationship` y `AuditEvent`. La matriz declara 17
-  recursos: lo que se diseñe para el resto habrá que autorizarlo llamando al `Authorizer`.
-- **Ninguna pantalla puede ofrecer borrar un tenant**: la aplicación ya no puede, por
-  decisión del 25 de agosto. Dar de baja se dibuja como cambio de `status`.
+  recursos: lo demás se autoriza llamando al `Authorizer`.
+- **Ninguna pantalla puede ofrecer borrar un tenant**: la aplicación ya no puede, por decisión
+  del 25 de agosto. Dar de baja se dibuja como cambio de `status`.
+- El E2E de A2 fija tres cosas que ninguna pantalla nueva puede romper: que Vue monta, que el
+  estado **no depende solo del color**, y que se opera con teclado.
+- Las fuentes del lienzo están en `docs/ux/canvas/`. Si algo cambia en el diseño, se edita ahí
+  y se vuelve a sembrar; no se toca el fichero publicado.
 
 > **Nota de entorno para quien retome:** sin Docker, los servicios locales se levantan con
-> `pg_ctlcluster 16 main start` y `redis-server --daemonize yes`. La base `platform` y los dos
+> `pg_ctlcluster 16 main start` y `redis-server --daemonize yes`. **El contenedor los apaga
+> cada cierto tiempo**, y cuando pasa, el hook de pre-commit falla las 37 pruebas de
+> aislamiento a la vez: eso no es una fuga, es la base caída. Compruébalo con `pg_isready`
+> antes de buscar el fallo en el código; si fuera una fuga real, fallarían unas pocas. La base `platform` y los dos
 > roles ya existen y sobreviven entre sesiones; `platform_test` se re-migra con
 > `composer test:prepare`. Los gates: `composer lint`, `composer test`, `composer test:tenant`,
 > `npm run e2e` (con `PLAYWRIGHT_CHROMIUM_PATH=/opt/pw-browsers/chromium` en este entorno;

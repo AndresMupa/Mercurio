@@ -1,0 +1,205 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+  <style>
+    body { margin: 0; font-family: 'IBM Plex Sans', ui-sans-serif, system-ui, sans-serif; background: #f6f7f9; color: #16191d; }
+    a { color: #1d4ed8; } a:hover { color: #17369b; }
+    .mono { font-family: 'IBM Plex Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace; font-variant-numeric: tabular-nums; }
+    .lbl { font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: #5b6470; }
+    .campo { display: flex; flex-direction: column; gap: 3px; }
+    .valor { font-size: 13px; }
+  </style>
+</helmet>
+
+<div style="display: flex; flex-direction: column; height: 1040px; background: #f6f7f9;">
+
+  <div style="height: 56px; flex-shrink: 0; background: #ffffff; border-bottom: 1px solid #dfe3e8; display: flex; align-items: center; gap: 12px; padding: 0 24px;">
+    <a href="#" style="font-size: 12px; display: flex; align-items: center; gap: 4px;">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 6l-6 6 6 6"/></svg>
+      Personas
+    </a>
+    <span style="color: #dfe3e8;">/</span>
+    <span style="font-size: 14px; font-weight: 600;">Beatriz Duarte Neira</span>
+  </div>
+
+  <div style="flex-grow: 1; padding: 24px; display: flex; flex-direction: column; gap: 24px; overflow: hidden;">
+
+    <!-- encabezado: estado antes que dato -->
+    <div style="background: #ffffff; border: 1px solid #dfe3e8; border-radius: 4px; padding: 24px; display: flex; gap: 24px; align-items: flex-start;">
+      <div style="width: 56px; height: 56px; border-radius: 4px; background: #e8eefc; color: #1d4ed8; display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 600; flex-shrink: 0;">BD</div>
+
+      <div style="flex-grow: 1; min-width: 0; display: flex; flex-direction: column; gap: 12px;">
+        <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+          <div style="font-size: 20px; font-weight: 600;">Beatriz Duarte Neira</div>
+          <span style="display: inline-flex; align-items: center; gap: 5px; background: #e8f3ee; border: 1px solid #b6d8c8; border-radius: 2px; padding: 2px 7px;">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#12704a" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5 9 18 20 6"/></svg>
+            <span style="font-size: 11px; font-weight: 600; color: #12704a;">Relación vigente</span>
+          </span>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 24px;">
+          <div class="campo"><span class="lbl">Estado</span><span class="valor" style="font-weight: 500;">Empleada · indefinido</span></div>
+          <div class="campo"><span class="lbl">Responsable del expediente</span><span class="valor">Adriana Acosta</span></div>
+          <div class="campo"><span class="lbl">Siguiente acción</span><span class="valor" style="color: #5b6470;">Ninguna pendiente</span></div>
+          <div class="campo"><span class="lbl">Vence</span><span class="valor mono" style="color: #5b6470;">—</span></div>
+        </div>
+      </div>
+
+      <div style="flex-shrink: 0; display: flex; gap: 8px;">
+        <button style="height: 32px; padding: 0 12px; border: 1px solid #dfe3e8; border-radius: 2px; background: #ffffff; font-family: inherit; font-size: 12px; cursor: pointer;">Editar</button>
+        <button style="height: 32px; padding: 0 12px; border: 1px solid #eabcbc; border-radius: 2px; background: #ffffff; color: #a11b1b; font-family: inherit; font-size: 12px; cursor: pointer;">Cerrar relación</button>
+      </div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); gap: 24px; flex-grow: 1; min-height: 0;">
+
+      <div style="display: flex; flex-direction: column; gap: 24px;">
+
+        <!-- datos, con los P3 enmascarados -->
+        <div style="background: #ffffff; border: 1px solid #dfe3e8; border-radius: 4px;">
+          <div style="height: 40px; border-bottom: 1px solid #dfe3e8; display: flex; align-items: center; padding: 0 16px; gap: 8px;">
+            <span style="font-size: 13px; font-weight: 600;">Datos de la persona</span>
+            <span style="margin-left: auto; display: inline-flex; align-items: center; gap: 5px; border: 1px solid #e6cf9a; background: #fbf1de; border-radius: 2px; padding: 2px 7px;">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#8a5a00" stroke-width="2" stroke-linecap="round"><rect x="5" y="10.5" width="14" height="10" rx="1.5"/><path d="M8.5 10.5V7a3.5 3.5 0 0 1 7 0v3.5"/></svg>
+              <span style="font-size: 11px; font-weight: 600; color: #8a5a00;">3 campos P3 ocultos</span>
+            </span>
+          </div>
+
+          <div style="padding: 16px; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px 24px;">
+            <div class="campo"><span class="lbl">Nombres</span><span class="valor">Beatriz</span></div>
+            <div class="campo"><span class="lbl">Apellidos</span><span class="valor">Duarte Neira</span></div>
+            <div class="campo"><span class="lbl">Nivel educativo</span><span class="valor">Licenciada</span></div>
+
+            <div class="campo">
+              <span class="lbl" style="display: flex; align-items: center; gap: 4px;">Documento
+                <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#8a5a00" stroke-width="2.4" stroke-linecap="round"><rect x="5" y="10.5" width="14" height="10" rx="1.5"/><path d="M8.5 10.5V7a3.5 3.5 0 0 1 7 0v3.5"/></svg>
+              </span>
+              <span style="display: flex; align-items: center; gap: 8px;">
+                <span class="valor mono" style="color: #5b6470;">C.C. •••• 0001</span>
+                <a href="#" style="font-size: 11.5px; font-weight: 500;">Ver</a>
+              </span>
+            </div>
+            <div class="campo">
+              <span class="lbl" style="display: flex; align-items: center; gap: 4px;">Fecha de nacimiento
+                <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#8a5a00" stroke-width="2.4" stroke-linecap="round"><rect x="5" y="10.5" width="14" height="10" rx="1.5"/><path d="M8.5 10.5V7a3.5 3.5 0 0 1 7 0v3.5"/></svg>
+              </span>
+              <span style="display: flex; align-items: center; gap: 8px;">
+                <span class="valor mono" style="color: #5b6470;">••·••·••••</span>
+                <a href="#" style="font-size: 11.5px; font-weight: 500;">Ver</a>
+              </span>
+            </div>
+            <div class="campo">
+              <span class="lbl" style="display: flex; align-items: center; gap: 4px;">Sexo
+                <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#8a5a00" stroke-width="2.4" stroke-linecap="round"><rect x="5" y="10.5" width="14" height="10" rx="1.5"/><path d="M8.5 10.5V7a3.5 3.5 0 0 1 7 0v3.5"/></svg>
+              </span>
+              <span style="display: flex; align-items: center; gap: 8px;">
+                <span class="valor mono" style="color: #5b6470;">••••••</span>
+                <a href="#" style="font-size: 11.5px; font-weight: 500;">Ver</a>
+              </span>
+            </div>
+
+            <div class="campo"><span class="lbl">Estatuto docente</span><span class="valor mono">1278 de 2002</span></div>
+            <div class="campo"><span class="lbl">Grado en el escalafón</span><span class="valor mono">9</span></div>
+            <div class="campo"><span class="lbl">Sede</span><span class="valor">Principal · Boyero</span></div>
+          </div>
+        </div>
+
+        <!-- línea de vida de la relación -->
+        <div style="background: #ffffff; border: 1px solid #dfe3e8; border-radius: 4px;">
+          <div style="height: 40px; border-bottom: 1px solid #dfe3e8; display: flex; align-items: center; padding: 0 16px; font-size: 13px; font-weight: 600;">Relación laboral</div>
+
+          <div style="padding: 16px 16px 8px; display: flex; align-items: center; gap: 0;">
+            <div style="display: flex; flex-direction: column; align-items: center; gap: 6px; width: 96px;">
+              <div style="width: 12px; height: 12px; border-radius: 50%; background: #12704a;"></div>
+              <div style="font-size: 11px; font-weight: 600;">Planeada</div>
+              <div class="mono" style="font-size: 11px; color: #5b6470;">15·12·23</div>
+            </div>
+            <div style="flex-grow: 1; height: 2px; background: #12704a;"></div>
+            <div style="display: flex; flex-direction: column; align-items: center; gap: 6px; width: 96px;">
+              <div style="width: 12px; height: 12px; border-radius: 50%; background: #12704a;"></div>
+              <div style="font-size: 11px; font-weight: 600;">Vigente</div>
+              <div class="mono" style="font-size: 11px; color: #5b6470;">01·01·24</div>
+            </div>
+            <div style="flex-grow: 1; height: 2px; background: #dfe3e8;"></div>
+            <div style="display: flex; flex-direction: column; align-items: center; gap: 6px; width: 96px; opacity: 0.55;">
+              <div style="width: 12px; height: 12px; border-radius: 50%; border: 2px solid #9aa4b0; background: #ffffff;"></div>
+              <div style="font-size: 11px;">Suspendida</div>
+              <div class="mono" style="font-size: 11px; color: #5b6470;">—</div>
+            </div>
+            <div style="flex-grow: 1; height: 2px; background: #dfe3e8;"></div>
+            <div style="display: flex; flex-direction: column; align-items: center; gap: 6px; width: 96px; opacity: 0.55;">
+              <div style="width: 12px; height: 12px; border-radius: 50%; border: 2px solid #9aa4b0; background: #ffffff;"></div>
+              <div style="font-size: 11px;">Cerrada</div>
+              <div class="mono" style="font-size: 11px; color: #5b6470;">—</div>
+            </div>
+          </div>
+
+          <div style="padding: 8px 16px 16px; font-size: 11.5px; color: #5b6470; line-height: 1.5;">Una relación <strong>se cierra, no se borra</strong>. La fila cerrada sigue en la ficha y en los reportes del periodo en que estuvo vigente.</div>
+
+          <div style="border-top: 1px solid #dfe3e8; padding: 16px; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px;">
+            <div class="campo"><span class="lbl">Cargo</span><span class="valor">Docente de primaria</span></div>
+            <div class="campo"><span class="lbl">Nivel de enseñanza</span><span class="valor">Básica primaria</span></div>
+            <div class="campo"><span class="lbl">Horas semanales</span><span class="valor mono">40</span></div>
+            <div class="campo"><span class="lbl">Vinculación</span><span class="valor">Indefinido</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- AuditTrail: quién ha mirado esto -->
+      <div style="background: #ffffff; border: 1px solid #dfe3e8; border-radius: 4px; display: flex; flex-direction: column; min-height: 0;">
+        <div style="height: 40px; border-bottom: 1px solid #dfe3e8; display: flex; align-items: center; gap: 8px; padding: 0 16px;">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#5b6470" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 4 6v6c0 5 3.4 8.2 8 9 4.6-.8 8-4 8-9V6l-8-3Z"/><path d="M9 12l2 2 4-4"/></svg>
+          <span style="font-size: 13px; font-weight: 600;">Quién ha visto sus datos</span>
+        </div>
+
+        <div style="padding: 12px 16px; border-bottom: 1px solid #dfe3e8; display: flex; flex-direction: column; gap: 5px;">
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <span class="mono" style="font-size: 11px; color: #5b6470; width: 78px;">25·08 09:14</span>
+            <span style="font-size: 11px; font-weight: 600; color: #12704a; background: #e8f3ee; border: 1px solid #b6d8c8; border-radius: 2px; padding: 0 4px;">OK</span>
+            <span style="font-size: 12px; font-weight: 500;">Adriana Acosta</span>
+          </div>
+          <div style="font-size: 11.5px; color: #16191d; padding-left: 86px;">Leyó el documento · <span class="mono" style="color: #1d4ed8;">reporte_c600</span></div>
+        </div>
+
+        <div style="padding: 12px 16px; border-bottom: 1px solid #dfe3e8; display: flex; flex-direction: column; gap: 5px;">
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <span class="mono" style="font-size: 11px; color: #5b6470; width: 78px;">22·08 16:40</span>
+            <span style="font-size: 11px; font-weight: 600; color: #a11b1b; background: #fbeaea; border: 1px solid #eabcbc; border-radius: 2px; padding: 0 4px;">NO</span>
+            <span style="font-size: 12px; font-weight: 500;">Javier Rincón</span>
+          </div>
+          <div style="font-size: 11.5px; color: #16191d; padding-left: 86px;">Intentó ver la fecha de nacimiento · <span class="mono" style="color: #a11b1b;">abac.techo</span></div>
+        </div>
+
+        <div style="padding: 12px 16px; border-bottom: 1px solid #dfe3e8; display: flex; flex-direction: column; gap: 5px;">
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <span class="mono" style="font-size: 11px; color: #5b6470; width: 78px;">20·08 11:02</span>
+            <span style="font-size: 11px; font-weight: 600; color: #12704a; background: #e8f3ee; border: 1px solid #b6d8c8; border-radius: 2px; padding: 0 4px;">OK</span>
+            <span style="font-size: 12px; font-weight: 500;">Gonzalo Ospina</span>
+          </div>
+          <div style="font-size: 11.5px; color: #16191d; padding-left: 86px;">Leyó el documento · <span class="mono" style="color: #1d4ed8;">gestion_laboral</span></div>
+        </div>
+
+        <div style="padding: 12px 16px; display: flex; flex-direction: column; gap: 5px;">
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <span class="mono" style="font-size: 11px; color: #5b6470; width: 78px;">02·08 08:31</span>
+            <span style="font-size: 11px; font-weight: 600; color: #12704a; background: #e8f3ee; border: 1px solid #b6d8c8; border-radius: 2px; padding: 0 4px;">OK</span>
+            <span style="font-size: 12px; font-weight: 500;">La propia titular</span>
+          </div>
+          <div style="font-size: 11.5px; color: #16191d; padding-left: 86px;">Vio sus datos · <span class="mono" style="color: #1d4ed8;">solicitud_del_titular</span></div>
+        </div>
+
+        <div style="margin-top: auto; border-top: 1px solid #dfe3e8; padding: 12px 16px; background: #f6f7f9; font-size: 11px; color: #5b6470; line-height: 1.5;">Esta lista es la misma que el producto entregaría a la titular si la pidiera. Que ella también pueda verla es el punto: la auditoría no es solo para el inspector.</div>
+      </div>
+    </div>
+  </div>
+</div>
+</x-dc>
+</body>
+</html>

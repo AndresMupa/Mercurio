@@ -1,0 +1,196 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+  <style>
+    body { margin: 0; font-family: 'IBM Plex Sans', ui-sans-serif, system-ui, sans-serif; background: #f6f7f9; color: #16191d; }
+    a { color: #1d4ed8; } a:hover { color: #17369b; }
+    .mono { font-family: 'IBM Plex Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace; font-variant-numeric: tabular-nums; }
+    .lbl { font-size: 12px; font-weight: 500; color: #16191d; }
+    .campo { height: 38px; border: 1px solid #dfe3e8; border-radius: 2px; display: flex; align-items: center; padding: 0 10px; font-size: 13px; background: #ffffff; }
+    .micro { font-size: 11px; color: #5b6470; }
+  </style>
+</helmet>
+
+<div style="display: flex; flex-direction: column; height: 1060px; background: #f6f7f9;">
+
+  <div style="height: 56px; flex-shrink: 0; background: #ffffff; border-bottom: 1px solid #dfe3e8; display: flex; align-items: center; gap: 12px; padding: 0 24px;">
+    <span style="font-size: 14px; font-weight: 600;">Nueva persona</span>
+    <span class="micro">J1 · desde buscar el documento hasta que suma en el C600</span>
+    <div style="margin-left: auto; display: flex; align-items: center; gap: 6px;">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#12704a" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5 9 18 20 6"/></svg>
+      <span style="font-size: 11.5px; color: #12704a;">Borrador guardado hace 4 s</span>
+    </div>
+  </div>
+
+  <!-- WizardStepper -->
+  <div style="flex-shrink: 0; background: #ffffff; border-bottom: 1px solid #dfe3e8; padding: 16px 24px; display: flex; align-items: center; gap: 0;">
+    <div style="display: flex; align-items: center; gap: 8px;">
+      <div style="width: 22px; height: 22px; border-radius: 50%; background: #12704a; display: flex; align-items: center; justify-content: center;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5 9 18 20 6"/></svg></div>
+      <span style="font-size: 12.5px; font-weight: 500;">Buscar</span>
+    </div>
+    <div style="flex-grow: 1; height: 1px; background: #12704a; margin: 0 12px;"></div>
+    <div style="display: flex; align-items: center; gap: 8px;">
+      <div style="width: 22px; height: 22px; border-radius: 50%; background: #12704a; display: flex; align-items: center; justify-content: center;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5 9 18 20 6"/></svg></div>
+      <span style="font-size: 12.5px; font-weight: 500;">Persona</span>
+    </div>
+    <div style="flex-grow: 1; height: 1px; background: #12704a; margin: 0 12px;"></div>
+    <div style="display: flex; align-items: center; gap: 8px;">
+      <div style="width: 22px; height: 22px; border-radius: 50%; background: #12704a; display: flex; align-items: center; justify-content: center;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5 9 18 20 6"/></svg></div>
+      <span style="font-size: 12.5px; font-weight: 500;">Identidad</span>
+    </div>
+    <div style="flex-grow: 1; height: 1px; background: #dfe3e8; margin: 0 12px;"></div>
+    <div style="display: flex; align-items: center; gap: 8px;">
+      <div class="mono" style="width: 22px; height: 22px; border-radius: 50%; background: #1d4ed8; color: #ffffff; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600;">4</div>
+      <span style="font-size: 12.5px; font-weight: 600; color: #1d4ed8;">Relación</span>
+    </div>
+    <div style="flex-grow: 1; height: 1px; background: #dfe3e8; margin: 0 12px;"></div>
+    <div style="display: flex; align-items: center; gap: 8px; opacity: 0.55;">
+      <div class="mono" style="width: 22px; height: 22px; border-radius: 50%; border: 1px solid #9aa4b0; color: #5b6470; display: flex; align-items: center; justify-content: center; font-size: 11px;">5</div>
+      <span style="font-size: 12.5px;">Asignación</span>
+    </div>
+  </div>
+
+  <div style="flex-grow: 1; padding: 24px; display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 24px; overflow: hidden;">
+
+    <div style="display: flex; flex-direction: column; gap: 24px; min-height: 0;">
+
+      <!-- paso activo, con el error de solapamiento -->
+      <div style="background: #ffffff; border: 1px solid #dfe3e8; border-radius: 4px;">
+        <div style="height: 40px; border-bottom: 1px solid #dfe3e8; display: flex; align-items: center; padding: 0 16px; font-size: 13px; font-weight: 600;">Relación laboral</div>
+
+        <div style="padding: 16px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px;">
+          <div style="display: flex; flex-direction: column; gap: 4px;">
+            <span class="lbl">Entidad jurídica</span>
+            <div class="campo">Colegio Demostración Juan Pablo II S.A.S.</div>
+          </div>
+
+          <!-- error 4 · sede ajena a la entidad -->
+          <div style="display: flex; flex-direction: column; gap: 4px;">
+            <span class="lbl">Sede</span>
+            <div class="campo" style="border: 2px solid #a11b1b;">Sede única · Colegio Vecino</div>
+            <div style="display: flex; gap: 6px; align-items: flex-start; margin-top: 2px;">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#a11b1b" stroke-width="2.2" stroke-linecap="round" style="flex-shrink: 0; margin-top: 1px;"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5v5"/><path d="M12 16.2v.01"/></svg>
+              <span style="font-size: 11.5px; color: #a11b1b; line-height: 1.45;">Esa sede pertenece a otra entidad jurídica. Elige una de las de <strong>Juan Pablo II S.A.S.</strong> o cambia la entidad arriba.</span>
+            </div>
+          </div>
+
+          <div style="display: flex; flex-direction: column; gap: 4px;">
+            <span class="lbl">Tipo de vínculo</span>
+            <div class="campo">Empleado</div>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 4px;">
+            <span class="lbl">Modalidad</span>
+            <div class="campo">Término indefinido</div>
+          </div>
+
+          <!-- error 3 · solapamiento -->
+          <div style="display: flex; flex-direction: column; gap: 4px;">
+            <span class="lbl">Vigente desde</span>
+            <div class="campo mono" style="border: 2px solid #8a5a00;">01·02·2024</div>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 4px;">
+            <span class="lbl">Vigente hasta</span>
+            <div class="campo mono" style="color: #5b6470;">Sin fecha de fin</div>
+          </div>
+        </div>
+
+        <div style="margin: 0 16px 16px; background: #fbf1de; border: 1px solid #e6cf9a; border-left: 3px solid #8a5a00; border-radius: 2px; padding: 12px 14px; display: flex; gap: 10px; align-items: flex-start;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#8a5a00" stroke-width="2" stroke-linecap="round" style="flex-shrink: 0; margin-top: 1px;"><path d="M12 4 2.5 20h19L12 4Z"/><path d="M12 10v4"/><path d="M12 17.2v.01"/></svg>
+          <div style="display: flex; flex-direction: column; gap: 6px;">
+            <div style="font-size: 12.5px; font-weight: 600; color: #8a5a00;">Se solapa con una relación que ya está vigente</div>
+            <div style="font-size: 12px; line-height: 1.5;">Esta persona ya figura como <strong>Docente de primaria</strong> desde el <span class="mono">01·01·2024</span>, sin fecha de fin. Dos vínculos vigentes a la vez en la misma entidad no es algo que el C600 sepa reportar.</div>
+            <div style="display: flex; gap: 8px; margin-top: 2px;">
+              <button style="height: 30px; padding: 0 12px; border: 1px solid #8a5a00; border-radius: 2px; background: #ffffff; color: #8a5a00; font-family: inherit; font-size: 12px; font-weight: 500; cursor: pointer;">Cerrar la anterior el 31·01·2024</button>
+              <button style="height: 30px; padding: 0 12px; border: 1px solid #e6cf9a; border-radius: 2px; background: #ffffff; font-family: inherit; font-size: 12px; cursor: pointer;">Ver la relación vigente</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- catálogo de los cuatro errores de J1 -->
+      <div style="background: #ffffff; border: 1px solid #dfe3e8; border-radius: 4px; flex-grow: 1; min-height: 0;">
+        <div style="height: 40px; border-bottom: 1px solid #dfe3e8; display: flex; align-items: center; gap: 8px; padding: 0 16px;">
+          <span style="font-size: 13px; font-weight: 600;">Los cuatro caminos de error de J1</span>
+          <span class="micro">La validación ocurre al salir del campo, nunca al final</span>
+        </div>
+
+        <div style="padding: 16px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px;">
+
+          <div style="border: 1px solid #dfe3e8; border-left: 3px solid #a11b1b; border-radius: 2px; padding: 12px 14px; display: flex; flex-direction: column; gap: 6px;">
+            <div style="font-size: 12px; font-weight: 600; color: #a11b1b;">1 · Documento ya registrado</div>
+            <div style="font-size: 12px; line-height: 1.5;">«El documento <span class="mono">90000001</span> ya está en <strong>Beatriz Duarte Neira</strong>, con relación vigente.»</div>
+            <div class="micro" style="line-height: 1.45;">Salida: abrir esa ficha, no crear una segunda. El buscador del paso 1 existe justamente para que esto casi nunca llegue aquí.</div>
+          </div>
+
+          <div style="border: 1px solid #dfe3e8; border-left: 3px solid #a11b1b; border-radius: 2px; padding: 12px 14px; display: flex; flex-direction: column; gap: 6px;">
+            <div style="font-size: 12px; font-weight: 600; color: #a11b1b;">2 · Fecha de nacimiento de menor de edad</div>
+            <div style="font-size: 12px; line-height: 1.5;">«Esta plataforma <strong>no guarda datos de menores de edad</strong>. Los estudiantes se registran como conteos en Matrícula, sin nombre ni documento.»</div>
+            <div class="micro" style="line-height: 1.45;">Explica el porqué, no da un error técnico. Y ofrece el camino correcto: ir a Matrícula.</div>
+          </div>
+
+          <div style="border: 1px solid #dfe3e8; border-left: 3px solid #8a5a00; border-radius: 2px; padding: 12px 14px; display: flex; flex-direction: column; gap: 6px;">
+            <div style="font-size: 12px; font-weight: 600; color: #8a5a00;">3 · Relación solapada</div>
+            <div style="font-size: 12px; line-height: 1.5;">Arriba, en vivo. Es <strong>advertencia y no bloqueo</strong>: hay casos legítimos —un traslado dentro del mismo día— y quien decide es la persona, con el dato delante.</div>
+            <div class="micro" style="line-height: 1.45;">Ofrece la corrección de un clic, con la fecha ya calculada.</div>
+          </div>
+
+          <div style="border: 1px solid #dfe3e8; border-left: 3px solid #a11b1b; border-radius: 2px; padding: 12px 14px; display: flex; flex-direction: column; gap: 6px;">
+            <div style="font-size: 12px; font-weight: 600; color: #a11b1b;">4 · Sede ajena a la entidad</div>
+            <div style="font-size: 12px; line-height: 1.5;">Arriba, en vivo. Bloquea: una relación colgada de una sede que no es de esa entidad rompe el C600 y el aislamiento por sede del coordinador.</div>
+            <div class="micro" style="line-height: 1.45;">Mejor aún: el selector de sede solo lista las de la entidad elegida. El error existe para la carga masiva, donde nadie elige de una lista.</div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- lo que va a pasar -->
+    <div style="display: flex; flex-direction: column; gap: 24px;">
+      <div style="background: #ffffff; border: 1px solid #dfe3e8; border-radius: 4px;">
+        <div style="height: 40px; border-bottom: 1px solid #dfe3e8; display: flex; align-items: center; padding: 0 16px; font-size: 13px; font-weight: 600;">Al guardar</div>
+        <div style="padding: 16px; display: flex; flex-direction: column; gap: 12px;">
+          <div style="display: flex; gap: 8px; align-items: flex-start;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#12704a" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0; margin-top: 2px;"><path d="M4 12.5 9 18 20 6"/></svg>
+            <span style="font-size: 12px; line-height: 1.5;">Aparece en <strong>Personas</strong> como vigente</span>
+          </div>
+          <div style="display: flex; gap: 8px; align-items: flex-start;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#12704a" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0; margin-top: 2px;"><path d="M4 12.5 9 18 20 6"/></svg>
+            <span style="font-size: 12px; line-height: 1.5;">Suma <span class="mono">+1</span> en el C600 de 2026 · docentes de aula pasa de <span class="mono">47</span> a <span class="mono">48</span></span>
+          </div>
+          <div style="display: flex; gap: 8px; align-items: flex-start;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#12704a" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0; margin-top: 2px;"><path d="M4 12.5 9 18 20 6"/></svg>
+            <span style="font-size: 12px; line-height: 1.5;">Queda un <span class="mono">AuditEvent</span> con tu nombre</span>
+          </div>
+          <div style="display: flex; gap: 8px; align-items: flex-start;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#8a5a00" stroke-width="2.2" stroke-linecap="round" style="flex-shrink: 0; margin-top: 2px;"><path d="M12 4 2.5 20h19L12 4Z"/></svg>
+            <span style="font-size: 12px; line-height: 1.5;">No recibe acceso todavía: crear la cuenta es un paso aparte</span>
+          </div>
+        </div>
+      </div>
+
+      <div style="background: #ffffff; border: 1px solid #dfe3e8; border-radius: 4px; padding: 16px; display: flex; flex-direction: column; gap: 8px;">
+        <div style="font-size: 13px; font-weight: 600;">Datos ya capturados</div>
+        <div style="display: flex; justify-content: space-between;"><span class="micro">Nombres</span><span style="font-size: 12px;">Teresa</span></div>
+        <div style="display: flex; justify-content: space-between;"><span class="micro">Apellidos</span><span style="font-size: 12px;">Mahecha Ibáñez</span></div>
+        <div style="display: flex; justify-content: space-between;"><span class="micro">Documento</span><span class="mono" style="font-size: 12px;">C.C. 90000068</span></div>
+        <div style="display: flex; justify-content: space-between;"><span class="micro">Nacimiento</span><span class="mono" style="font-size: 12px;">14·07·1989</span></div>
+        <div style="display: flex; justify-content: space-between;"><span class="micro">Nivel educativo</span><span style="font-size: 12px;">Licenciada</span></div>
+      </div>
+
+      <div style="margin-top: auto; display: flex; flex-direction: column; gap: 8px;">
+        <button style="height: 40px; border: 0; border-radius: 2px; background: #9aa4b0; color: #ffffff; font-family: inherit; font-size: 13px; font-weight: 500; cursor: not-allowed;">Continuar a Asignación</button>
+        <div class="micro" style="text-align: center;">Bloqueado por el error de sede</div>
+      </div>
+    </div>
+  </div>
+</div>
+</x-dc>
+</body>
+</html>

@@ -1,0 +1,138 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+  <style>
+    body { margin: 0; font-family: 'IBM Plex Sans', ui-sans-serif, system-ui, sans-serif; background: #f6f7f9; color: #16191d; }
+    a { color: #1d4ed8; } a:hover { color: #17369b; }
+    .mono { font-family: 'IBM Plex Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace; font-variant-numeric: tabular-nums; }
+    .lbl { font-size: 11px; font-weight: 600; letter-spacing: 0.09em; text-transform: uppercase; color: #5b6470; }
+    .li { display: flex; gap: 10px; align-items: flex-start; }
+  </style>
+</helmet>
+
+<div style="padding: 32px; display: flex; flex-direction: column; gap: 24px;">
+
+  <div style="display: flex; flex-direction: column; gap: 4px;">
+    <div class="lbl">ConfirmWithImpact · J5</div>
+    <div style="font-size: 20px; font-weight: 600;">Cerrar una relación laboral</div>
+    <div style="font-size: 13px; color: #5b6470; max-width: 820px;">Antes de confirmar, el sistema dice <strong>exactamente qué se pierde y qué no</strong>. Sin sorpresas: quien cierra una relación un viernes no puede descubrir el lunes que además borró algo.</div>
+  </div>
+
+  <div style="background: #ffffff; border: 1px solid #dfe3e8; border-radius: 4px; box-shadow: 0 8px 24px rgba(22, 25, 29, 0.10); max-width: 880px;">
+
+    <div style="padding: 24px; border-bottom: 1px solid #dfe3e8; display: flex; gap: 16px; align-items: flex-start;">
+      <div style="width: 40px; height: 40px; border-radius: 2px; background: #fbeaea; border: 1px solid #eabcbc; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#a11b1b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8V6a4 4 0 0 0-8 0"/><rect x="5" y="10.5" width="14" height="10" rx="1.5"/><path d="M12 14v3"/></svg>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 4px;">
+        <div style="font-size: 16px; font-weight: 600;">Cerrar la relación de Javier Rincón Ibáñez</div>
+        <div style="font-size: 12.5px; color: #5b6470;">Coordinador · vigente desde el <span class="mono">01·01·2024</span> · sede principal</div>
+      </div>
+    </div>
+
+    <div style="padding: 24px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; border-bottom: 1px solid #dfe3e8;">
+      <div style="display: flex; flex-direction: column; gap: 4px;">
+        <label style="font-size: 12px; font-weight: 500;">Motivo</label>
+        <div style="height: 38px; border: 1px solid #dfe3e8; border-radius: 2px; display: flex; align-items: center; justify-content: space-between; padding: 0 10px; font-size: 13px;">
+          <span>Renuncia voluntaria</span>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#5b6470" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m7 10 5 5 5-5"/></svg>
+        </div>
+        <div style="font-size: 11px; color: #5b6470;">Lista cerrada: alimenta el reporte de rotación y la causal ante el Ministerio.</div>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 4px;">
+        <label style="font-size: 12px; font-weight: 500;">Último día</label>
+        <div class="mono" style="height: 38px; border: 1px solid #dfe3e8; border-radius: 2px; display: flex; align-items: center; padding: 0 10px; font-size: 13px;">31·08·2026</div>
+        <div style="font-size: 11px; color: #5b6470;">El acceso cesa en la petición siguiente a esa fecha, no al guardar.</div>
+      </div>
+    </div>
+
+    <!-- el impacto, en dos columnas: qué pierde y qué no -->
+    <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); border-bottom: 1px solid #dfe3e8;">
+
+      <div style="padding: 24px; border-right: 1px solid #dfe3e8; display: flex; flex-direction: column; gap: 12px;">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#a11b1b" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12"/><path d="M18 6 6 18"/></svg>
+          <div style="font-size: 13px; font-weight: 600; color: #a11b1b;">Pierde, a partir del 1 de septiembre</div>
+        </div>
+
+        <div class="li">
+          <span style="width: 5px; height: 5px; border-radius: 50%; background: #a11b1b; flex-shrink: 0; margin-top: 7px;"></span>
+          <div style="font-size: 12.5px; line-height: 1.5;"><strong>Su rol de coordinador</strong> y con él el acceso a la plataforma</div>
+        </div>
+        <div class="li">
+          <span style="width: 5px; height: 5px; border-radius: 50%; background: #a11b1b; flex-shrink: 0; margin-top: 7px;"></span>
+          <div style="font-size: 12.5px; line-height: 1.5;">Ver las <strong>18 personas</strong> de su sede</div>
+        </div>
+        <div class="li">
+          <span style="width: 5px; height: 5px; border-radius: 50%; background: #a11b1b; flex-shrink: 0; margin-top: 7px;"></span>
+          <div style="font-size: 12.5px; line-height: 1.5;">Cargar y editar los <strong>conteos de matrícula</strong> de básica secundaria</div>
+        </div>
+        <div class="li">
+          <span style="width: 5px; height: 5px; border-radius: 50%; background: #a11b1b; flex-shrink: 0; margin-top: 7px;"></span>
+          <div style="font-size: 12.5px; line-height: 1.5;">Generar el <strong>C600</strong></div>
+        </div>
+
+        <div style="margin-top: 4px; background: #fbf1de; border: 1px solid #e6cf9a; border-radius: 2px; padding: 10px 12px; display: flex; gap: 8px; align-items: flex-start;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#8a5a00" stroke-width="2.2" stroke-linecap="round" style="flex-shrink: 0; margin-top: 1px;"><path d="M12 4 2.5 20h19L12 4Z"/></svg>
+          <div style="font-size: 11.5px; line-height: 1.5;">Quedan <strong>2 tareas suyas sin dueño</strong>: conteos de 8.º y 9.º sin confirmar. Se reasignan a talento humano.</div>
+        </div>
+      </div>
+
+      <div style="padding: 24px; display: flex; flex-direction: column; gap: 12px;">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#12704a" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5 9 18 20 6"/></svg>
+          <div style="font-size: 13px; font-weight: 600; color: #12704a;">No se pierde</div>
+        </div>
+
+        <div class="li">
+          <span style="width: 5px; height: 5px; border-radius: 50%; background: #12704a; flex-shrink: 0; margin-top: 7px;"></span>
+          <div style="font-size: 12.5px; line-height: 1.5;">Su <strong>ficha completa</strong>: una relación se cierra, no se borra</div>
+        </div>
+        <div class="li">
+          <span style="width: 5px; height: 5px; border-radius: 50%; background: #12704a; flex-shrink: 0; margin-top: 7px;"></span>
+          <div style="font-size: 12.5px; line-height: 1.5;">Sigue contando en el <strong>C600 de 2026</strong>, porque estuvo vigente ese año</div>
+        </div>
+        <div class="li">
+          <span style="width: 5px; height: 5px; border-radius: 50%; background: #12704a; flex-shrink: 0; margin-top: 7px;"></span>
+          <div style="font-size: 12.5px; line-height: 1.5;">Todo su <strong>rastro de auditoría</strong>, con la retención de 5 años</div>
+        </div>
+        <div class="li">
+          <span style="width: 5px; height: 5px; border-radius: 50%; background: #12704a; flex-shrink: 0; margin-top: 7px;"></span>
+          <div style="font-size: 12.5px; line-height: 1.5;">La posibilidad de <strong>volver a contratarlo</strong>: sería una relación nueva sobre la misma persona</div>
+        </div>
+      </div>
+    </div>
+
+    <div style="padding: 24px; display: flex; flex-direction: column; gap: 16px;">
+      <div style="display: flex; gap: 10px; align-items: flex-start;">
+        <div style="width: 15px; height: 15px; border: 1px solid #9aa4b0; border-radius: 2px; flex-shrink: 0; margin-top: 1px;"></div>
+        <div style="font-size: 12.5px; line-height: 1.5;">Entiendo que a partir del 1 de septiembre esta persona <strong>pierde el acceso</strong> y que las 2 tareas pasan a talento humano.</div>
+      </div>
+
+      <div style="background: #f6f7f9; border: 1px solid #dfe3e8; border-radius: 2px; padding: 12px 14px; display: flex; gap: 10px; align-items: flex-start;">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#5b6470" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0; margin-top: 1px;"><circle cx="12" cy="8" r="3.4"/><path d="M5 20c0-3.6 3.1-5.6 7-5.6s7 2 7 5.6"/></svg>
+        <div style="font-size: 11.5px; line-height: 1.55;">Queda registrado que <strong>Adriana Acosta</strong> cerró esta relación el 25 de agosto de 2026. Ninguna decisión de este tipo la toma el software solo: siempre hay una persona responsable con nombre.</div>
+      </div>
+
+      <div style="display: flex; gap: 8px; justify-content: flex-end;">
+        <button style="height: 40px; padding: 0 16px; border: 1px solid #dfe3e8; border-radius: 2px; background: #ffffff; font-family: inherit; font-size: 13px; cursor: pointer;">Cancelar</button>
+        <button style="height: 40px; padding: 0 20px; border: 0; border-radius: 2px; background: #a11b1b; color: #ffffff; font-family: inherit; font-size: 13px; font-weight: 500; cursor: pointer;">Cerrar la relación</button>
+      </div>
+    </div>
+  </div>
+
+  <div style="max-width: 880px; background: #ffffff; border: 1px dashed #dfe3e8; border-radius: 4px; padding: 16px; display: flex; flex-direction: column; gap: 8px;">
+    <div class="lbl">Nota de diseño</div>
+    <div style="font-size: 12px; line-height: 1.6;">El impacto no es una advertencia genérica: son las <strong>cifras de esta persona</strong> —18 personas de su sede, 2 tareas suyas— calculadas al abrir el diálogo. Una frase del tipo «esta acción no se puede deshacer» no le dice nada a nadie. Y la columna de la derecha es igual de importante: buena parte del miedo a cerrar una relación viene de no saber si además se pierde el histórico.</div>
+  </div>
+</div>
+</x-dc>
+</body>
+</html>

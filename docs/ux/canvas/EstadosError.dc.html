@@ -1,0 +1,146 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+  <style>
+    body { margin: 0; font-family: 'IBM Plex Sans', ui-sans-serif, system-ui, sans-serif; background: #f6f7f9; color: #16191d; }
+    a { color: #1d4ed8; } a:hover { color: #17369b; }
+    .mono { font-family: 'IBM Plex Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace; font-variant-numeric: tabular-nums; }
+    .lbl { font-size: 11px; font-weight: 600; letter-spacing: 0.09em; text-transform: uppercase; color: #5b6470; }
+    .card { background: #ffffff; border: 1px solid #dfe3e8; border-radius: 4px; display: flex; flex-direction: column; overflow: hidden; }
+    .head { height: 34px; border-bottom: 1px solid #dfe3e8; display: flex; align-items: center; gap: 8px; padding: 0 12px; font-size: 12px; font-weight: 600; background: #f6f7f9; }
+    .body { padding: 20px; display: flex; flex-direction: column; gap: 10px; flex-grow: 1; }
+    .t { font-size: 14px; font-weight: 600; }
+    .p { font-size: 12.5px; line-height: 1.55; }
+    .rule { font-size: 11px; background: #f6f7f9; border: 1px solid #dfe3e8; border-radius: 2px; padding: 6px 8px; color: #5b6470; }
+    .btn { height: 34px; padding: 0 14px; border: 0; border-radius: 2px; background: #1d4ed8; color: #ffffff; font-family: inherit; font-size: 12.5px; font-weight: 500; cursor: pointer; }
+    .btn2 { height: 34px; padding: 0 14px; border: 1px solid #dfe3e8; border-radius: 2px; background: #ffffff; font-family: inherit; font-size: 12.5px; cursor: pointer; }
+  </style>
+</helmet>
+
+<div style="padding: 32px; display: flex; flex-direction: column; gap: 24px;">
+
+  <div style="display: flex; flex-direction: column; gap: 4px;">
+    <div class="lbl">Estados de error · el camino donde se pierde la confianza</div>
+    <div style="font-size: 20px; font-weight: 600;">Seis negativas, y qué dice cada una</div>
+    <div style="font-size: 13px; color: #5b6470; max-width: 900px;">Todas comparten tres cosas: <strong>nombran el motivo real</strong> sin jerga técnica, <strong>dicen a quién acudir</strong>, y <strong>no pierden el trabajo</strong> de quien las encuentra. Ninguna filtra información que su destinatario no debería tener.</div>
+  </div>
+
+  <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px;">
+
+    <!-- 1 · matriz deniega -->
+    <div class="card" style="border-left: 3px solid #a11b1b;">
+      <div class="head">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#a11b1b" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="8.5"/><path d="M6.5 6.5l11 11"/></svg>
+        Sin permiso para esa acción
+      </div>
+      <div class="body">
+        <div class="t">Tu rol no puede crear personas</div>
+        <div class="p">Como <strong>rector</strong> ves toda la planta y firmas los reportes, pero las altas y bajas las ejecuta talento humano. No es un fallo: es la separación que hace que la auditoría distinga quién decidió y quién registró.</div>
+        <div style="display: flex; gap: 8px; margin-top: auto; padding-top: 8px;">
+          <button class="btn">Pedírselo a Adriana Acosta</button>
+        </div>
+        <div class="rule mono">denied · matrix.deny</div>
+      </div>
+    </div>
+
+    <!-- 2 · falta propósito -->
+    <div class="card" style="border-left: 3px solid #a11b1b;">
+      <div class="head">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#a11b1b" stroke-width="2" stroke-linecap="round"><rect x="5" y="10.5" width="14" height="10" rx="1.5"/><path d="M8.5 10.5V7a3.5 3.5 0 0 1 7 0v3.5"/></svg>
+        Dato P3 sin propósito
+      </div>
+      <div class="body">
+        <div class="t">Hace falta decir para qué</div>
+        <div class="p">Cerraste el diálogo sin elegir propósito, así que el documento sigue oculto. El intento quedó registrado —también los denegados— y eso es correcto: un rastro que solo guarda los aciertos no sirve ante una inspección.</div>
+        <div style="display: flex; gap: 8px; margin-top: auto; padding-top: 8px;">
+          <button class="btn">Elegir propósito</button>
+        </div>
+        <div class="rule mono">denied · abac.purpose</div>
+      </div>
+    </div>
+
+    <!-- 3 · rol vencido -->
+    <div class="card" style="border-left: 3px solid #8a5a00;">
+      <div class="head">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#8a5a00" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5v5l3 2"/></svg>
+        Rol vencido
+      </div>
+      <div class="body">
+        <div class="t">Tu acceso de soporte expiró ayer</div>
+        <div class="p">Se te concedió del 10 al 24 de agosto con consentimiento del colegio. Caducó solo, sin que nadie tuviera que acordarse de revocarlo, que es exactamente lo que debe pasar.</div>
+        <div style="display: flex; gap: 8px; margin-top: auto; padding-top: 8px;">
+          <button class="btn2">Solicitar una nueva ventana</button>
+        </div>
+        <div class="rule mono">denied · abac.vigencia</div>
+      </div>
+    </div>
+
+    <!-- 4 · relación cerrada a media sesión -->
+    <div class="card" style="border-left: 3px solid #8a5a00;">
+      <div class="head">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#8a5a00" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8V6a4 4 0 0 0-8 0"/><rect x="5" y="10.5" width="14" height="10" rx="1.5"/></svg>
+        Relación cerrada durante la sesión
+      </div>
+      <div class="body">
+        <div class="t">Tu vínculo con el colegio se cerró</div>
+        <div class="p">Ocurrió mientras tenías la pantalla abierta, así que el acceso terminó en esta petición sin esperar a que cerraras sesión. Si crees que es un error, habla con talento humano: desde aquí no hay nada que reintentar.</div>
+        <div style="display: flex; gap: 8px; margin-top: auto; padding-top: 8px;">
+          <button class="btn2">Volver al inicio de sesión</button>
+        </div>
+        <div class="rule mono">denied · abac.relacion</div>
+      </div>
+    </div>
+
+    <!-- 5 · tenant equivocado -->
+    <div class="card" style="border-left: 3px solid #a11b1b;">
+      <div class="head">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#a11b1b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21V8l9-5 9 5v13"/><path d="m9 13 6 6"/><path d="m15 13-6 6"/></svg>
+        Sesión de otro colegio
+      </div>
+      <div class="body">
+        <div class="t">Esta dirección es de otro colegio</div>
+        <div class="p">Tu sesión pertenece a <strong>Juan Pablo II</strong> y abriste un enlace de otro cliente. No se te enseña ni el nombre del otro colegio, ni si existe.</div>
+        <div style="display: flex; gap: 8px; margin-top: auto; padding-top: 8px;">
+          <button class="btn">Volver a Juan Pablo II</button>
+        </div>
+        <div class="rule mono">403 · abac.tenant</div>
+      </div>
+    </div>
+
+    <!-- 6 · fallo del servidor -->
+    <div class="card" style="border-left: 3px solid #a11b1b;">
+      <div class="head">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#a11b1b" stroke-width="2.2" stroke-linecap="round"><path d="M12 3 2.5 20h19L12 3Z"/><path d="M12 10v4"/><path d="M12 17.2v.01"/></svg>
+        Algo falló de nuestro lado
+      </div>
+      <div class="body">
+        <div class="t">No pudimos guardar los cambios</div>
+        <div class="p"><strong>Tu borrador está a salvo</strong> y se reintenta solo. Si sigue fallando, dale este código a soporte: con él encuentran exactamente esta petición en los registros.</div>
+        <div class="mono" style="font-size: 13px; font-weight: 500; background: #f6f7f9; border: 1px solid #dfe3e8; border-radius: 2px; padding: 8px 10px; display: flex; align-items: center; justify-content: space-between;">
+          <span>018f2c1a-9d41</span>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#5b6470" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="11" height="11" rx="1.6"/><path d="M5 15V5a1.6 1.6 0 0 1 1.6-1.6H15"/></svg>
+        </div>
+        <div style="display: flex; gap: 8px; margin-top: auto; padding-top: 8px;">
+          <button class="btn2">Reintentar ahora</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div style="background: #ffffff; border: 1px dashed #dfe3e8; border-radius: 4px; padding: 16px; display: flex; flex-direction: column; gap: 8px;">
+    <div class="lbl">Dos reglas que estas seis pantallas obedecen</div>
+    <div style="font-size: 12.5px; line-height: 1.6; max-width: 1000px;"><strong>Ninguna enseña lo que su destinatario no debe ver.</strong> La de tenant no nombra al otro colegio; la de fallo no muestra el mensaje de la excepción, solo la correlación con la que soporte lo encuentra en un registro que sí está protegido.</div>
+    <div style="font-size: 12.5px; line-height: 1.6; max-width: 1000px;"><strong>Ninguna deja al usuario sin salida.</strong> Cuatro llevan a una acción; las dos que no —relación cerrada, rol vencido— dicen a quién acudir, porque fingir un botón que no va a funcionar es peor que no ponerlo.</div>
+  </div>
+</div>
+</x-dc>
+</body>
+</html>

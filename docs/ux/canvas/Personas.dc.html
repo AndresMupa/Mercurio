@@ -1,0 +1,244 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+  <style>
+    body { margin: 0; font-family: 'IBM Plex Sans', ui-sans-serif, system-ui, sans-serif; background: #f6f7f9; color: #16191d; }
+    a { color: #1d4ed8; } a:hover { color: #17369b; }
+    .mono { font-family: 'IBM Plex Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace; font-variant-numeric: tabular-nums; }
+    .row { display: grid; grid-template-columns: 32px minmax(0, 1.5fr) 116px minmax(0, 1.1fr) 136px 88px 116px 84px; gap: 12px; padding: 0 16px; align-items: center; height: 36px; border-bottom: 1px solid #dfe3e8; }
+    .th { font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: #5b6470; }
+    .td { font-size: 12.5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .box { width: 14px; height: 14px; border: 1px solid #9aa4b0; border-radius: 2px; background: #ffffff; }
+  </style>
+</helmet>
+
+<div style="display: flex; flex-direction: column; height: 1000px; background: #f6f7f9;">
+
+  <div style="height: 56px; flex-shrink: 0; background: #ffffff; border-bottom: 1px solid #dfe3e8; display: flex; align-items: center; gap: 16px; padding: 0 24px;">
+    <div style="font-size: 14px; font-weight: 600;">Personas</div>
+    <div class="mono" style="font-size: 11px; color: #5b6470; border: 1px solid #dfe3e8; border-radius: 2px; padding: 2px 6px;">63 vigentes · 1 suspendida · 3 cerradas</div>
+    <div style="margin-left: auto; display: flex; gap: 8px;">
+      <button style="height: 32px; padding: 0 12px; border: 1px solid #dfe3e8; border-radius: 2px; background: #ffffff; font-family: inherit; font-size: 12px; cursor: pointer; display: flex; align-items: center; gap: 6px;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#5b6470" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M4 20h16"/></svg>
+        Carga masiva
+      </button>
+      <button style="height: 32px; padding: 0 12px; border: 0; border-radius: 2px; background: #1d4ed8; color: #ffffff; font-family: inherit; font-size: 12px; font-weight: 500; cursor: pointer; display: flex; align-items: center; gap: 6px;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.1" stroke-linecap="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+        Nueva persona
+      </button>
+    </div>
+  </div>
+
+  <!-- FilterBar -->
+  <div style="flex-shrink: 0; background: #ffffff; border-bottom: 1px solid #dfe3e8; padding: 12px 24px; display: flex; align-items: center; gap: 8px;">
+    <div style="width: 300px; height: 30px; border: 1px solid #dfe3e8; border-radius: 2px; display: flex; align-items: center; gap: 8px; padding: 0 10px;">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#5b6470" stroke-width="1.8" stroke-linecap="round"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></svg>
+      <span style="font-size: 12px; color: #5b6470;">Nombre, documento o cargo</span>
+    </div>
+    <div style="height: 30px; border: 1px solid #1d4ed8; background: #e8eefc; border-radius: 2px; display: flex; align-items: center; gap: 6px; padding: 0 10px;">
+      <span style="font-size: 12px; color: #1d4ed8; font-weight: 500;">Sede: principal</span>
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#1d4ed8" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12"/><path d="M18 6 6 18"/></svg>
+    </div>
+    <div style="height: 30px; border: 1px solid #1d4ed8; background: #e8eefc; border-radius: 2px; display: flex; align-items: center; gap: 6px; padding: 0 10px;">
+      <span style="font-size: 12px; color: #1d4ed8; font-weight: 500;">Año lectivo: 2026</span>
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#1d4ed8" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12"/><path d="M18 6 6 18"/></svg>
+    </div>
+    <div style="height: 30px; border: 1px dashed #dfe3e8; border-radius: 2px; display: flex; align-items: center; gap: 6px; padding: 0 10px;">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#5b6470" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+      <span style="font-size: 12px; color: #5b6470;">Filtro</span>
+    </div>
+    <div style="margin-left: auto; display: flex; align-items: center; gap: 12px;">
+      <div style="display: flex; align-items: center; gap: 4px;">
+        <span class="th">Densidad</span>
+        <div style="display: flex; border: 1px solid #dfe3e8; border-radius: 2px; overflow: hidden;">
+          <div style="font-size: 11px; padding: 4px 8px; background: #16191d; color: #ffffff; font-weight: 500;">Compacta</div>
+          <div style="font-size: 11px; padding: 4px 8px; color: #5b6470;">Cómoda</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- barra de selección -->
+  <div style="flex-shrink: 0; background: #e8eefc; border-bottom: 1px solid #b9cbf5; padding: 8px 24px; display: flex; align-items: center; gap: 16px;">
+    <div style="font-size: 12px; font-weight: 600; color: #1d4ed8;">3 seleccionadas</div>
+    <div style="display: flex; gap: 8px;">
+      <button style="height: 26px; padding: 0 10px; border: 1px solid #b9cbf5; border-radius: 2px; background: #ffffff; font-family: inherit; font-size: 11.5px; cursor: pointer;">Asignar cargo</button>
+      <button style="height: 26px; padding: 0 10px; border: 1px solid #b9cbf5; border-radius: 2px; background: #ffffff; font-family: inherit; font-size: 11.5px; cursor: pointer;">Cambiar sede</button>
+      <button style="height: 26px; padding: 0 10px; border: 1px solid #eabcbc; border-radius: 2px; background: #ffffff; color: #a11b1b; font-family: inherit; font-size: 11.5px; cursor: pointer;">Cerrar relación</button>
+    </div>
+    <div style="margin-left: auto; font-size: 11px; color: #5b6470;">Toda acción en lote pide confirmación con impacto, una por una.</div>
+  </div>
+
+  <!-- tabla -->
+  <div style="flex-grow: 1; min-height: 0; background: #ffffff; display: flex; flex-direction: column;">
+    <div class="row" style="background: #f6f7f9; height: 32px; border-bottom: 1px solid #dfe3e8;">
+      <div><div class="box" style="background: #1d4ed8; border-color: #1d4ed8; display: flex; align-items: center; justify-content: center;"><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5 9 18 20 6"/></svg></div></div>
+      <div class="th" style="display: flex; align-items: center; gap: 4px;">Nombre
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#16191d" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m7 14 5 5 5-5"/></svg>
+      </div>
+      <div class="th" style="display: flex; align-items: center; gap: 4px;">Documento
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#8a5a00" stroke-width="2" stroke-linecap="round"><rect x="5" y="10.5" width="14" height="10" rx="1.5"/><path d="M8.5 10.5V7a3.5 3.5 0 0 1 7 0v3.5"/></svg>
+      </div>
+      <div class="th">Cargo</div>
+      <div class="th">Tipo</div>
+      <div class="th">Estatuto</div>
+      <div class="th">Estado</div>
+      <div class="th" style="text-align: right;">Desde</div>
+    </div>
+
+    <div class="row" style="background: #e8eefc;">
+      <div><div class="box" style="background: #1d4ed8; border-color: #1d4ed8; display: flex; align-items: center; justify-content: center;"><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5 9 18 20 6"/></svg></div></div>
+      <div class="td" style="font-weight: 500;">Adriana Acosta Fajardo</div>
+      <div class="td mono" style="color: #5b6470;">•••• 0000</div>
+      <div class="td">Talento humano</div>
+      <div class="td" style="color: #5b6470;">Administrativo</div>
+      <div class="td mono" style="color: #5b6470;">—</div>
+      <div><span style="display: inline-flex; align-items: center; gap: 4px; background: #e8f3ee; border: 1px solid #b6d8c8; border-radius: 2px; padding: 1px 5px;"><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#12704a" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5 9 18 20 6"/></svg><span style="font-size: 11px; font-weight: 600; color: #12704a;">Vigente</span></span></div>
+      <div class="td mono" style="text-align: right; color: #5b6470;">01·01·24</div>
+    </div>
+
+    <div class="row" style="background: #e8eefc;">
+      <div><div class="box" style="background: #1d4ed8; border-color: #1d4ed8; display: flex; align-items: center; justify-content: center;"><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5 9 18 20 6"/></svg></div></div>
+      <div class="td" style="font-weight: 500;">Beatriz Duarte Neira</div>
+      <div class="td mono" style="color: #5b6470;">•••• 0001</div>
+      <div class="td">Docente de primaria</div>
+      <div class="td" style="color: #5b6470;">Docente de aula</div>
+      <div class="td mono" style="color: #5b6470;">1278</div>
+      <div><span style="display: inline-flex; align-items: center; gap: 4px; background: #e8f3ee; border: 1px solid #b6d8c8; border-radius: 2px; padding: 1px 5px;"><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#12704a" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5 9 18 20 6"/></svg><span style="font-size: 11px; font-weight: 600; color: #12704a;">Vigente</span></span></div>
+      <div class="td mono" style="text-align: right; color: #5b6470;">01·01·24</div>
+    </div>
+
+    <div class="row" style="background: #e8eefc;">
+      <div><div class="box" style="background: #1d4ed8; border-color: #1d4ed8; display: flex; align-items: center; justify-content: center;"><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5 9 18 20 6"/></svg></div></div>
+      <div class="td" style="font-weight: 500;">Carolina Galvis Urrego</div>
+      <div class="td mono" style="color: #5b6470;">•••• 0002</div>
+      <div class="td">Docente de primaria</div>
+      <div class="td" style="color: #5b6470;">Docente de aula</div>
+      <div class="td mono" style="color: #5b6470;">1278</div>
+      <div><span style="display: inline-flex; align-items: center; gap: 4px; background: #e8f3ee; border: 1px solid #b6d8c8; border-radius: 2px; padding: 1px 5px;"><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#12704a" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5 9 18 20 6"/></svg><span style="font-size: 11px; font-weight: 600; color: #12704a;">Vigente</span></span></div>
+      <div class="td mono" style="text-align: right; color: #5b6470;">01·01·24</div>
+    </div>
+
+    <div class="row">
+      <div><div class="box"></div></div>
+      <div class="td" style="font-weight: 500;">Diana Higuera Zapata</div>
+      <div class="td mono" style="color: #5b6470;">•••• 0003</div>
+      <div class="td">Docente de secundaria</div>
+      <div class="td" style="color: #5b6470;">Docente de aula</div>
+      <div class="td mono" style="color: #5b6470;">2277</div>
+      <div><span style="display: inline-flex; align-items: center; gap: 4px; background: #e8f3ee; border: 1px solid #b6d8c8; border-radius: 2px; padding: 1px 5px;"><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#12704a" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5 9 18 20 6"/></svg><span style="font-size: 11px; font-weight: 600; color: #12704a;">Vigente</span></span></div>
+      <div class="td mono" style="text-align: right; color: #5b6470;">01·01·24</div>
+    </div>
+
+    <!-- fila con dato faltante: el problema visible en la fila, no en un informe aparte -->
+    <div class="row" style="border-left: 2px solid #8a5a00;">
+      <div><div class="box"></div></div>
+      <div class="td" style="font-weight: 500;">Elena Jaramillo Bermúdez</div>
+      <div class="td" style="display: flex; align-items: center; gap: 4px;">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#8a5a00" stroke-width="2.2" stroke-linecap="round"><path d="M12 4 2.5 20h19L12 4Z"/></svg>
+        <span style="font-size: 11.5px; color: #8a5a00; font-weight: 500;">Falta</span>
+      </div>
+      <div class="td">Docente de secundaria</div>
+      <div class="td" style="color: #5b6470;">Docente de aula</div>
+      <div class="td mono" style="color: #5b6470;">2277</div>
+      <div><span style="display: inline-flex; align-items: center; gap: 4px; background: #e8f3ee; border: 1px solid #b6d8c8; border-radius: 2px; padding: 1px 5px;"><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#12704a" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5 9 18 20 6"/></svg><span style="font-size: 11px; font-weight: 600; color: #12704a;">Vigente</span></span></div>
+      <div class="td mono" style="text-align: right; color: #5b6470;">01·02·25</div>
+    </div>
+
+    <div class="row">
+      <div><div class="box"></div></div>
+      <div class="td" style="font-weight: 500;">Fernanda Lozano Cadena</div>
+      <div class="td mono" style="color: #5b6470;">•••• 0005</div>
+      <div class="td">Docente de media</div>
+      <div class="td" style="color: #5b6470;">Docente de aula</div>
+      <div class="td mono" style="color: #5b6470;">2277</div>
+      <div><span style="display: inline-flex; align-items: center; gap: 4px; background: #e8f3ee; border: 1px solid #b6d8c8; border-radius: 2px; padding: 1px 5px;"><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#12704a" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5 9 18 20 6"/></svg><span style="font-size: 11px; font-weight: 600; color: #12704a;">Vigente</span></span></div>
+      <div class="td mono" style="text-align: right; color: #5b6470;">01·01·24</div>
+    </div>
+
+    <div class="row">
+      <div><div class="box"></div></div>
+      <div class="td" style="font-weight: 500;">Gonzalo Ospina Mahecha</div>
+      <div class="td mono" style="color: #5b6470;">•••• 0006</div>
+      <div class="td">Rector</div>
+      <div class="td" style="color: #5b6470;">Directivo docente</div>
+      <div class="td mono" style="color: #5b6470;">1278</div>
+      <div><span style="display: inline-flex; align-items: center; gap: 4px; background: #e8f3ee; border: 1px solid #b6d8c8; border-radius: 2px; padding: 1px 5px;"><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#12704a" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5 9 18 20 6"/></svg><span style="font-size: 11px; font-weight: 600; color: #12704a;">Vigente</span></span></div>
+      <div class="td mono" style="text-align: right; color: #5b6470;">15·01·22</div>
+    </div>
+
+    <div class="row">
+      <div><div class="box"></div></div>
+      <div class="td" style="font-weight: 500;">Helena Pardo Salgado</div>
+      <div class="td mono" style="color: #5b6470;">•••• 0007</div>
+      <div class="td">Orientadora escolar</div>
+      <div class="td" style="color: #5b6470;">Docente orientador</div>
+      <div class="td mono" style="color: #5b6470;">—</div>
+      <div><span style="display: inline-flex; align-items: center; gap: 4px; background: #e8f3ee; border: 1px solid #b6d8c8; border-radius: 2px; padding: 1px 5px;"><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#12704a" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5 9 18 20 6"/></svg><span style="font-size: 11px; font-weight: 600; color: #12704a;">Vigente</span></span></div>
+      <div class="td mono" style="text-align: right; color: #5b6470;">01·01·24</div>
+    </div>
+
+    <!-- suspendida -->
+    <div class="row">
+      <div><div class="box"></div></div>
+      <div class="td" style="font-weight: 500;">Isabel Quintero Tovar</div>
+      <div class="td mono" style="color: #5b6470;">•••• 0008</div>
+      <div class="td">Enfermera pasante</div>
+      <div class="td" style="color: #5b6470;">Administrativo</div>
+      <div class="td mono" style="color: #5b6470;">—</div>
+      <div><span style="display: inline-flex; align-items: center; gap: 4px; background: #f6f7f9; border: 1px solid #9aa4b0; border-radius: 2px; padding: 1px 5px;"><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#5b6470" stroke-width="3" stroke-linecap="round"><path d="M9 5v14"/><path d="M15 5v14"/></svg><span style="font-size: 11px; font-weight: 600; color: #5b6470;">Suspendida</span></span></div>
+      <div class="td mono" style="text-align: right; color: #5b6470;">03·03·25</div>
+    </div>
+
+    <div class="row">
+      <div><div class="box"></div></div>
+      <div class="td" style="font-weight: 500;">Javier Rincón Ibáñez</div>
+      <div class="td mono" style="color: #5b6470;">•••• 0009</div>
+      <div class="td">Coordinador</div>
+      <div class="td" style="color: #5b6470;">Directivo docente</div>
+      <div class="td mono" style="color: #5b6470;">1278</div>
+      <div><span style="display: inline-flex; align-items: center; gap: 4px; background: #e8f3ee; border: 1px solid #b6d8c8; border-radius: 2px; padding: 1px 5px;"><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#12704a" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5 9 18 20 6"/></svg><span style="font-size: 11px; font-weight: 600; color: #12704a;">Vigente</span></span></div>
+      <div class="td mono" style="text-align: right; color: #5b6470;">01·01·24</div>
+    </div>
+
+    <!-- cerrada: sigue existiendo, no se borra (invariante 5) -->
+    <div class="row" style="background: #fbfbfc;">
+      <div><div class="box" style="border-color: #dfe3e8;"></div></div>
+      <div class="td" style="color: #5b6470;">Wilson Higuera Pardo</div>
+      <div class="td mono" style="color: #5b6470;">•••• 0041</div>
+      <div class="td" style="color: #5b6470;">Servicios generales</div>
+      <div class="td" style="color: #5b6470;">Servicios generales</div>
+      <div class="td mono" style="color: #5b6470;">—</div>
+      <div><span style="display: inline-flex; align-items: center; gap: 4px; background: #ffffff; border: 1px solid #dfe3e8; border-radius: 2px; padding: 1px 5px;"><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#5b6470" stroke-width="2.6" stroke-linecap="round"><path d="M6 6l12 12"/><path d="M18 6 6 18"/></svg><span style="font-size: 11px; font-weight: 600; color: #5b6470;">Cerrada</span></span></div>
+      <div class="td mono" style="text-align: right; color: #5b6470;">01·01·24</div>
+    </div>
+
+    <div class="row"><div><div class="box"></div></div><div class="td" style="font-weight: 500;">Karina Vanegas Escobar</div><div class="td mono" style="color: #5b6470;">•••• 0011</div><div class="td">Docente de preescolar</div><div class="td" style="color: #5b6470;">Docente de aula</div><div class="td mono" style="color: #5b6470;">1278</div><div><span style="display: inline-flex; align-items: center; gap: 4px; background: #e8f3ee; border: 1px solid #b6d8c8; border-radius: 2px; padding: 1px 5px;"><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#12704a" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5 9 18 20 6"/></svg><span style="font-size: 11px; font-weight: 600; color: #12704a;">Vigente</span></span></div><div class="td mono" style="text-align: right; color: #5b6470;">01·01·24</div></div>
+    <div class="row"><div><div class="box"></div></div><div class="td" style="font-weight: 500;">Leonardo Cadena Neira</div><div class="td mono" style="color: #5b6470;">•••• 0012</div><div class="td">Docente de media</div><div class="td" style="color: #5b6470;">Docente de aula</div><div class="td mono" style="color: #5b6470;">2277</div><div><span style="display: inline-flex; align-items: center; gap: 4px; background: #e8f3ee; border: 1px solid #b6d8c8; border-radius: 2px; padding: 1px 5px;"><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#12704a" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5 9 18 20 6"/></svg><span style="font-size: 11px; font-weight: 600; color: #12704a;">Vigente</span></span></div><div class="td mono" style="text-align: right; color: #5b6470;">01·01·24</div></div>
+    <div class="row"><div><div class="box"></div></div><div class="td" style="font-weight: 500;">Marcela Salgado Galvis</div><div class="td mono" style="color: #5b6470;">•••• 0013</div><div class="td">Secretaria</div><div class="td" style="color: #5b6470;">Administrativo</div><div class="td mono" style="color: #5b6470;">—</div><div><span style="display: inline-flex; align-items: center; gap: 4px; background: #e8f3ee; border: 1px solid #b6d8c8; border-radius: 2px; padding: 1px 5px;"><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#12704a" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5 9 18 20 6"/></svg><span style="font-size: 11px; font-weight: 600; color: #12704a;">Vigente</span></span></div><div class="td mono" style="text-align: right; color: #5b6470;">01·01·24</div></div>
+    <div class="row"><div><div class="box"></div></div><div class="td" style="font-weight: 500;">Natalia Tovar Lozano</div><div class="td mono" style="color: #5b6470;">•••• 0014</div><div class="td">Docente de primaria</div><div class="td" style="color: #5b6470;">Docente de aula</div><div class="td mono" style="color: #5b6470;">1278</div><div><span style="display: inline-flex; align-items: center; gap: 4px; background: #e8f3ee; border: 1px solid #b6d8c8; border-radius: 2px; padding: 1px 5px;"><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#12704a" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5 9 18 20 6"/></svg><span style="font-size: 11px; font-weight: 600; color: #12704a;">Vigente</span></span></div><div class="td mono" style="text-align: right; color: #5b6470;">01·01·24</div></div>
+    <div class="row" style="border-bottom: 0;"><div><div class="box"></div></div><div class="td" style="font-weight: 500;">Óscar Urrego Duarte</div><div class="td mono" style="color: #5b6470;">•••• 0015</div><div class="td">Servicios generales</div><div class="td" style="color: #5b6470;">Servicios generales</div><div class="td mono" style="color: #5b6470;">—</div><div><span style="display: inline-flex; align-items: center; gap: 4px; background: #e8f3ee; border: 1px solid #b6d8c8; border-radius: 2px; padding: 1px 5px;"><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#12704a" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5 9 18 20 6"/></svg><span style="font-size: 11px; font-weight: 600; color: #12704a;">Vigente</span></span></div><div class="td mono" style="text-align: right; color: #5b6470;">01·01·24</div></div>
+  </div>
+
+  <!-- pie: origen del dato y paginación -->
+  <div style="flex-shrink: 0; background: #ffffff; border-top: 1px solid #dfe3e8; padding: 10px 24px; display: flex; align-items: center; gap: 16px;">
+    <div style="display: flex; align-items: center; gap: 6px;">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#8a5a00" stroke-width="2" stroke-linecap="round"><rect x="5" y="10.5" width="14" height="10" rx="1.5"/><path d="M8.5 10.5V7a3.5 3.5 0 0 1 7 0v3.5"/></svg>
+      <span style="font-size: 11.5px; color: #16191d;">La columna <strong>Documento</strong> es P3: se muestra enmascarada. Verla completa exige declarar un propósito y queda registrado.</span>
+    </div>
+    <div style="margin-left: auto; display: flex; align-items: center; gap: 12px;">
+      <span class="mono" style="font-size: 11px; color: #5b6470;">1–16 de 67</span>
+      <span style="font-size: 11px; color: #5b6470;">Por encima de 500 filas la tabla se virtualiza.</span>
+    </div>
+  </div>
+</div>
+</x-dc>
+</body>
+</html>

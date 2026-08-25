@@ -1,0 +1,156 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+  <style>
+    body { margin: 0; font-family: 'IBM Plex Sans', ui-sans-serif, system-ui, sans-serif; background: #f6f7f9; color: #16191d; }
+    a { color: #1d4ed8; } a:hover { color: #17369b; }
+    .mono { font-family: 'IBM Plex Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace; font-variant-numeric: tabular-nums; }
+    .lbl { font-size: 11px; font-weight: 600; letter-spacing: 0.09em; text-transform: uppercase; color: #5b6470; }
+    .card { background: #ffffff; border: 1px solid #dfe3e8; border-radius: 4px; }
+    .sw { height: 44px; border-radius: 2px; border: 1px solid rgba(22,25,29,0.10); }
+  </style>
+</helmet>
+
+<div style="padding: 40px; display: flex; flex-direction: column; gap: 32px; width: 1120px;">
+
+  <div style="display: flex; flex-direction: column; gap: 8px; border-bottom: 1px solid #dfe3e8; padding-bottom: 24px;">
+    <div class="lbl">Mercurio · Slice 0 · paso B7</div>
+    <div style="font-size: 28px; font-weight: 600; line-height: 1.2;">Las pantallas antes de construirlas</div>
+    <div style="font-size: 14px; color: #16191d; line-height: 1.6; max-width: 760px;">Once artboards con los recorridos del Slice 0, sus estados vacíos y sus errores. Los colores y los radios <strong>salen del repositorio</strong>, no de aquí: <span class="mono" style="font-size: 12.5px;">resources/css/app.css</span> ya los declara desde A1. Lo que este lienzo decide es lo que faltaba: tipografía, escala y anatomía de los componentes.</div>
+  </div>
+
+  <!-- lo que hay que aprobar -->
+  <div class="card" style="border-left: 3px solid #1d4ed8; padding: 24px; display: flex; flex-direction: column; gap: 16px;">
+    <div style="font-size: 16px; font-weight: 600;">Cinco decisiones que necesitan tu visto bueno</div>
+
+    <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px 32px;">
+      <div style="display: flex; gap: 10px; align-items: flex-start;">
+        <div class="mono" style="width: 20px; height: 20px; border-radius: 50%; background: #16191d; color: #ffffff; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600; flex-shrink: 0;">1</div>
+        <div style="font-size: 13px; line-height: 1.55;"><strong>IBM Plex Sans y Mono</strong> como familia. Superfamilia real, pensada para interfaz técnica densa, con acentuación española completa. La mono va en documentos, fechas, códigos DANE y toda columna numérica.</div>
+      </div>
+      <div style="display: flex; gap: 10px; align-items: flex-start;">
+        <div class="mono" style="width: 20px; height: 20px; border-radius: 50%; background: #16191d; color: #ffffff; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600; flex-shrink: 0;">2</div>
+        <div style="font-size: 13px; line-height: 1.55;"><strong>Los datos P3 salen enmascarados</strong> en tabla y en ficha. Verlos es una acción deliberada que pasa por el diálogo de propósito. Es la consecuencia de CA-04 en la interfaz.</div>
+      </div>
+      <div style="display: flex; gap: 10px; align-items: flex-start;">
+        <div class="mono" style="width: 20px; height: 20px; border-radius: 50%; background: #16191d; color: #ffffff; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600; flex-shrink: 0;">3</div>
+        <div style="font-size: 13px; line-height: 1.55;"><strong>El rector no tiene botones de alta ni de baja.</strong> No están deshabilitados: no existen en su pantalla. Un botón gris que nunca se va a poder pulsar es una promesa rota cada vez que se mira.</div>
+      </div>
+      <div style="display: flex; gap: 10px; align-items: flex-start;">
+        <div class="mono" style="width: 20px; height: 20px; border-radius: 50%; background: #16191d; color: #ffffff; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600; flex-shrink: 0;">4</div>
+        <div style="font-size: 13px; line-height: 1.55;"><strong>El solapamiento de relaciones advierte, no bloquea.</strong> Un traslado dentro del mismo día es legítimo. La sede ajena a la entidad sí bloquea, porque rompe el C600.</div>
+      </div>
+      <div style="display: flex; gap: 10px; align-items: flex-start;">
+        <div class="mono" style="width: 20px; height: 20px; border-radius: 50%; background: #16191d; color: #ffffff; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600; flex-shrink: 0;">5</div>
+        <div style="font-size: 13px; line-height: 1.55;"><strong>Cada persona ve quién leyó sus datos.</strong> La lista de la ficha es la misma que se le entregaría si la pidiera. La auditoría no es solo para el inspector.</div>
+      </div>
+      <div style="display: flex; gap: 10px; align-items: flex-start;">
+        <div style="width: 20px; height: 20px; border-radius: 50%; border: 1px dashed #9aa4b0; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#5b6470" stroke-width="2.4" stroke-linecap="round"><path d="M12 8v5"/><path d="M12 16.2v.01"/></svg>
+        </div>
+        <div style="font-size: 13px; line-height: 1.55; color: #5b6470;">Si alguna no te convence, se cambia aquí. Cambiarla en B8, con los componentes ya construidos, cuesta diez veces más.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- el sistema -->
+  <div style="display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 32px;">
+
+    <div style="display: flex; flex-direction: column; gap: 16px;">
+      <div class="lbl">Color · del repositorio, sin tocar</div>
+      <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px;">
+        <div style="display: flex; flex-direction: column; gap: 4px;"><div class="sw" style="background: #f6f7f9;"></div><div style="font-size: 11.5px; font-weight: 500;">ground</div><div class="mono" style="font-size: 11px; color: #5b6470;">#f6f7f9</div></div>
+        <div style="display: flex; flex-direction: column; gap: 4px;"><div class="sw" style="background: #ffffff;"></div><div style="font-size: 11.5px; font-weight: 500;">surface</div><div class="mono" style="font-size: 11px; color: #5b6470;">#ffffff</div></div>
+        <div style="display: flex; flex-direction: column; gap: 4px;"><div class="sw" style="background: #16191d;"></div><div style="font-size: 11.5px; font-weight: 500;">ink</div><div class="mono" style="font-size: 11px; color: #5b6470;">#16191d</div></div>
+        <div style="display: flex; flex-direction: column; gap: 4px;"><div class="sw" style="background: #5b6470;"></div><div style="font-size: 11.5px; font-weight: 500;">muted</div><div class="mono" style="font-size: 11px; color: #5b6470;">#5b6470</div></div>
+        <div style="display: flex; flex-direction: column; gap: 4px;"><div class="sw" style="background: #1d4ed8;"></div><div style="font-size: 11.5px; font-weight: 500;">accent</div><div class="mono" style="font-size: 11px; color: #5b6470;">#1d4ed8</div></div>
+        <div style="display: flex; flex-direction: column; gap: 4px;"><div class="sw" style="background: #12704a;"></div><div style="font-size: 11.5px; font-weight: 500;">ok</div><div class="mono" style="font-size: 11px; color: #5b6470;">#12704a</div></div>
+        <div style="display: flex; flex-direction: column; gap: 4px;"><div class="sw" style="background: #8a5a00;"></div><div style="font-size: 11.5px; font-weight: 500;">warn</div><div class="mono" style="font-size: 11px; color: #5b6470;">#8a5a00</div></div>
+        <div style="display: flex; flex-direction: column; gap: 4px;"><div class="sw" style="background: #a11b1b;"></div><div style="font-size: 11.5px; font-weight: 500;">critical</div><div class="mono" style="font-size: 11px; color: #5b6470;">#a11b1b</div></div>
+      </div>
+
+      <div style="display: flex; gap: 12px; align-items: flex-start; background: #f0eafb; border: 1px solid #cdb8f0; border-radius: 2px; padding: 12px 14px;">
+        <div style="width: 32px; height: 32px; border-radius: 2px; background: #5b21b6; flex-shrink: 0;"></div>
+        <div style="display: flex; flex-direction: column; gap: 2px;">
+          <div style="font-size: 12px; font-weight: 600; color: #5b21b6;">clinical · <span class="mono" style="font-weight: 500;">#5b21b6</span></div>
+          <div style="font-size: 11.5px; line-height: 1.5;">No aparece en ninguno de los once artboards, y es a propósito: se reserva a superficies P4 del Clinical Vault. Cuando alguien lo vea, tiene que reconocerlo <strong>antes de leer</strong>.</div>
+        </div>
+      </div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 16px;">
+      <div class="lbl">Escala tipográfica · fija, sin tamaños improvisados</div>
+      <div class="card" style="padding: 16px; display: flex; flex-direction: column; gap: 12px;">
+        <div style="display: flex; align-items: baseline; gap: 16px;"><span class="mono" style="font-size: 11px; color: #5b6470; width: 74px;">24 / 600</span><span style="font-size: 24px; font-weight: 600;">Título de pantalla</span></div>
+        <div style="display: flex; align-items: baseline; gap: 16px;"><span class="mono" style="font-size: 11px; color: #5b6470; width: 74px;">20 / 600</span><span style="font-size: 20px; font-weight: 600;">Encabezado de sección</span></div>
+        <div style="display: flex; align-items: baseline; gap: 16px;"><span class="mono" style="font-size: 11px; color: #5b6470; width: 74px;">14 / 400</span><span style="font-size: 14px;">Texto de lectura y formularios</span></div>
+        <div style="display: flex; align-items: baseline; gap: 16px;"><span class="mono" style="font-size: 11px; color: #5b6470; width: 74px;">12.5 / 400</span><span style="font-size: 12.5px;">Fila de tabla en densidad compacta</span></div>
+        <div style="display: flex; align-items: baseline; gap: 16px;"><span class="mono" style="font-size: 11px; color: #5b6470; width: 74px;">11 / 600</span><span class="lbl">Etiqueta de columna</span></div>
+        <div style="border-top: 1px solid #dfe3e8; padding-top: 12px; display: flex; align-items: baseline; gap: 16px;"><span class="mono" style="font-size: 11px; color: #5b6470; width: 74px;">mono</span><span class="mono" style="font-size: 13px;">90000001 · 325430001368 · 01·01·24</span></div>
+        <div style="font-size: 11.5px; color: #5b6470; line-height: 1.5;">Cifras alineadas con <span class="mono" style="font-size: 11px;">tabular-nums</span>: en una columna de 64 documentos, que los dígitos no bailen es lo que permite detectar el que está mal de un vistazo.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- el color nunca es el único canal -->
+  <div class="card" style="padding: 24px; display: flex; flex-direction: column; gap: 16px;">
+    <div style="display: flex; flex-direction: column; gap: 4px;">
+      <div style="font-size: 16px; font-weight: 600;">StatusPill · cuatro canales, no uno</div>
+      <div style="font-size: 13px; color: #5b6470;">Cada estado lleva <strong>forma, icono, texto y color</strong>. Tapa la columna de color con el dedo: se sigue leyendo igual.</div>
+    </div>
+
+    <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+      <span style="display: inline-flex; align-items: center; gap: 6px; background: #e8f3ee; border: 1px solid #b6d8c8; border-radius: 2px; padding: 4px 10px;">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#12704a" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5 9 18 20 6"/></svg>
+        <span style="font-size: 12px; font-weight: 600; color: #12704a;">Vigente</span>
+      </span>
+      <span style="display: inline-flex; align-items: center; gap: 6px; background: #fbf1de; border: 1px solid #e6cf9a; border-radius: 2px; padding: 4px 10px;">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#8a5a00" stroke-width="2.4" stroke-linecap="round"><path d="M12 4 2.5 20h19L12 4Z"/></svg>
+        <span style="font-size: 12px; font-weight: 600; color: #8a5a00;">Por vencer</span>
+      </span>
+      <span style="display: inline-flex; align-items: center; gap: 6px; background: #fbeaea; border: 1px solid #eabcbc; border-radius: 2px; padding: 4px 10px;">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#a11b1b" stroke-width="2.6" stroke-linecap="round"><path d="M6 6l12 12"/><path d="M18 6 6 18"/></svg>
+        <span style="font-size: 12px; font-weight: 600; color: #a11b1b;">Vencido</span>
+      </span>
+      <span style="display: inline-flex; align-items: center; gap: 6px; background: #f6f7f9; border: 1px solid #9aa4b0; border-radius: 2px; padding: 4px 10px;">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#5b6470" stroke-width="3" stroke-linecap="round"><path d="M9 5v14"/><path d="M15 5v14"/></svg>
+        <span style="font-size: 12px; font-weight: 600; color: #5b6470;">Suspendida</span>
+      </span>
+      <span style="display: inline-flex; align-items: center; gap: 6px; background: #ffffff; border: 1px solid #dfe3e8; border-radius: 2px; padding: 4px 10px;">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#5b6470" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12"/><path d="M18 6 6 18"/></svg>
+        <span style="font-size: 12px; font-weight: 600; color: #5b6470;">Cerrada</span>
+      </span>
+      <span style="display: inline-flex; align-items: center; gap: 6px; background: #fbf1de; border: 1px solid #e6cf9a; border-radius: 2px; padding: 4px 10px;">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#8a5a00" stroke-width="2" stroke-linecap="round"><rect x="5" y="10.5" width="14" height="10" rx="1.5"/><path d="M8.5 10.5V7a3.5 3.5 0 0 1 7 0v3.5"/></svg>
+        <span style="font-size: 12px; font-weight: 600; color: #8a5a00;">P3 oculto</span>
+      </span>
+    </div>
+
+    <div style="border-top: 1px solid #dfe3e8; padding-top: 16px; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px;">
+      <div style="display: flex; flex-direction: column; gap: 4px;">
+        <div class="lbl">Espaciado</div>
+        <div class="mono" style="font-size: 12.5px;">4 · 8 · 12 · 16 · 24 · 32 · 48 · 64</div>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 4px;">
+        <div class="lbl">Radio</div>
+        <div class="mono" style="font-size: 12.5px;">2 px controles · 4 px tarjetas</div>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 4px;">
+        <div class="lbl">Objetivo táctil mínimo</div>
+        <div class="mono" style="font-size: 12.5px;">44 px en móvil</div>
+      </div>
+    </div>
+  </div>
+
+  <div style="border-top: 1px solid #dfe3e8; padding-top: 16px; font-size: 12px; color: #5b6470; line-height: 1.6;">Los datos de todas las pantallas son los del tenant demo sembrado en B6: nombres y documentos inventados, cifras reales del ancla. Nada de <em>lorem ipsum</em>, y ni un dato de una persona real.</div>
+</div>
+</x-dc>
+</body>
+</html>

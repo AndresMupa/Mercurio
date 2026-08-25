@@ -1,0 +1,246 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+  <style>
+    body { margin: 0; font-family: 'IBM Plex Sans', ui-sans-serif, system-ui, sans-serif; background: #f6f7f9; color: #16191d; }
+    a { color: #1d4ed8; } a:hover { color: #17369b; }
+    .mono { font-family: 'IBM Plex Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace; font-variant-numeric: tabular-nums; }
+  </style>
+</helmet>
+
+<div style="display: flex; height: 1000px; background: #f6f7f9;">
+
+  <!-- ══ AppShell · rail ══════════════════════════════════ -->
+  <div style="width: 224px; flex-shrink: 0; background: #ffffff; border-right: 1px solid #dfe3e8; display: flex; flex-direction: column;">
+    <div style="padding: 16px; border-bottom: 1px solid #dfe3e8; display: flex; flex-direction: column; gap: 4px;">
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1d4ed8" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21V8l9-5 9 5v13"/><path d="M9 21v-6h6v6"/></svg>
+        <div style="font-size: 13px; font-weight: 600;">Juan Pablo II</div>
+      </div>
+      <div style="font-size: 11px; color: #5b6470;">Sede principal · Boyero</div>
+    </div>
+
+    <div style="flex-grow: 1; padding: 8px; display: flex; flex-direction: column; gap: 2px;">
+      <div style="display: flex; align-items: center; gap: 8px; height: 34px; padding: 0 8px; border-radius: 2px; background: #e8eefc; color: #1d4ed8; font-size: 13px; font-weight: 600; border-left: 2px solid #1d4ed8;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5h18"/><path d="M3 12h18"/><path d="M3 19h11"/></svg>
+        <span style="flex-grow: 1;">Mi trabajo</span>
+        <span class="mono" style="font-size: 11px; background: #1d4ed8; color: #ffffff; border-radius: 2px; padding: 1px 5px;">6</span>
+      </div>
+      <div style="display: flex; align-items: center; gap: 8px; height: 34px; padding: 0 8px; border-radius: 2px; font-size: 13px; color: #16191d;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#5b6470" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.2 2.7-5 6-5s6 1.8 6 5"/><path d="M17 11h4"/><path d="M19 9v4"/></svg>
+        <span>Personas</span>
+      </div>
+      <div style="display: flex; align-items: center; gap: 8px; height: 34px; padding: 0 8px; border-radius: 2px; font-size: 13px; color: #16191d;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#5b6470" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16v14H4z"/><path d="M8 3v5"/><path d="M16 3v5"/><path d="M4 11h16"/></svg>
+        <span>Relaciones</span>
+      </div>
+      <div style="display: flex; align-items: center; gap: 8px; height: 34px; padding: 0 8px; border-radius: 2px; font-size: 13px; color: #16191d;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#5b6470" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19V9"/><path d="M10 19V5"/><path d="M16 19v-7"/><path d="M3 21h18"/></svg>
+        <span>Matrícula</span>
+      </div>
+      <div style="display: flex; align-items: center; gap: 8px; height: 34px; padding: 0 8px; border-radius: 2px; font-size: 13px; color: #16191d;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#5b6470" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h9l4 4v14H6z"/><path d="M14 3v5h5"/><path d="M9 13h6"/><path d="M9 17h4"/></svg>
+        <span>Reportes</span>
+      </div>
+      <div style="display: flex; align-items: center; gap: 8px; height: 34px; padding: 0 8px; border-radius: 2px; font-size: 13px; color: #16191d;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#5b6470" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 4 6v6c0 5 3.4 8.2 8 9 4.6-.8 8-4 8-9V6l-8-3Z"/><path d="M9 12l2 2 4-4"/></svg>
+        <span>Auditoría</span>
+      </div>
+    </div>
+
+    <div style="padding: 12px 16px; border-top: 1px solid #dfe3e8; display: flex; align-items: center; gap: 8px;">
+      <div style="width: 28px; height: 28px; border-radius: 2px; background: #e8eefc; color: #1d4ed8; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600;">AA</div>
+      <div style="min-width: 0; flex-grow: 1;">
+        <div style="font-size: 12px; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">Adriana Acosta</div>
+        <div style="font-size: 11px; color: #5b6470;">Talento humano</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ contenido ════════════════════════════════════════ -->
+  <div style="flex-grow: 1; min-width: 0; display: flex; flex-direction: column;">
+
+    <div style="height: 56px; flex-shrink: 0; background: #ffffff; border-bottom: 1px solid #dfe3e8; display: flex; align-items: center; gap: 16px; padding: 0 24px;">
+      <div style="font-size: 14px; font-weight: 600;">Mi trabajo</div>
+      <div style="flex-grow: 1; max-width: 420px; height: 32px; border: 1px solid #dfe3e8; border-radius: 2px; display: flex; align-items: center; gap: 8px; padding: 0 10px; background: #f6f7f9;">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#5b6470" stroke-width="1.8" stroke-linecap="round"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></svg>
+        <span style="font-size: 12px; color: #5b6470;">Buscar persona, documento o cargo</span>
+        <span class="mono" style="margin-left: auto; font-size: 11px; color: #5b6470; border: 1px solid #dfe3e8; border-radius: 2px; padding: 1px 4px; background: #ffffff;">/</span>
+      </div>
+      <div style="margin-left: auto; display: flex; align-items: center; gap: 12px;">
+        <div class="mono" style="font-size: 11px; color: #5b6470;">25 ago 2026</div>
+      </div>
+    </div>
+
+    <div style="flex-grow: 1; overflow: hidden; padding: 24px; display: flex; flex-direction: column; gap: 24px;">
+
+      <!-- resumen: cuatro cifras, sin adornos -->
+      <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px;">
+        <div style="background: #ffffff; border: 1px solid #dfe3e8; border-radius: 4px; padding: 16px; display: flex; flex-direction: column; gap: 4px;">
+          <div style="font-size: 11px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: #5b6470;">Planta vigente</div>
+          <div class="mono" style="font-size: 24px; font-weight: 600;">64</div>
+          <div style="font-size: 11px; color: #5b6470;">personas con relación activa</div>
+        </div>
+        <div style="background: #ffffff; border: 1px solid #dfe3e8; border-radius: 4px; padding: 16px; display: flex; flex-direction: column; gap: 4px; border-top: 2px solid #8a5a00;">
+          <div style="font-size: 11px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: #5b6470;">Sin documento</div>
+          <div class="mono" style="font-size: 24px; font-weight: 600; color: #8a5a00;">3</div>
+          <div style="font-size: 11px; color: #5b6470;">bloquean el C600</div>
+        </div>
+        <div style="background: #ffffff; border: 1px solid #dfe3e8; border-radius: 4px; padding: 16px; display: flex; flex-direction: column; gap: 4px; border-top: 2px solid #a11b1b;">
+          <div style="font-size: 11px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: #5b6470;">Vencen en 30 días</div>
+          <div class="mono" style="font-size: 24px; font-weight: 600; color: #a11b1b;">2</div>
+          <div style="font-size: 11px; color: #5b6470;">relaciones a término fijo</div>
+        </div>
+        <div style="background: #ffffff; border: 1px solid #dfe3e8; border-radius: 4px; padding: 16px; display: flex; flex-direction: column; gap: 4px;">
+          <div style="font-size: 11px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: #5b6470;">Matrícula 2026</div>
+          <div class="mono" style="font-size: 24px; font-weight: 600;">883</div>
+          <div style="font-size: 11px; color: #12704a; display: flex; align-items: center; gap: 4px;">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#12704a" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5 9 18 20 6"/></svg>
+            <span>derivada de conteos</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- bandeja -->
+      <div style="background: #ffffff; border: 1px solid #dfe3e8; border-radius: 4px; display: flex; flex-direction: column; min-height: 0;">
+        <div style="height: 44px; border-bottom: 1px solid #dfe3e8; display: flex; align-items: center; gap: 12px; padding: 0 16px;">
+          <div style="font-size: 13px; font-weight: 600;">6 pendientes</div>
+          <div style="display: flex; gap: 6px; margin-left: 8px;">
+            <div style="font-size: 11px; font-weight: 500; border: 1px solid #1d4ed8; color: #1d4ed8; background: #e8eefc; border-radius: 2px; padding: 3px 8px;">Todo</div>
+            <div style="font-size: 11px; border: 1px solid #dfe3e8; color: #5b6470; border-radius: 2px; padding: 3px 8px;">Vencido · 1</div>
+            <div style="font-size: 11px; border: 1px solid #dfe3e8; color: #5b6470; border-radius: 2px; padding: 3px 8px;">Esta semana · 3</div>
+            <div style="font-size: 11px; border: 1px solid #dfe3e8; color: #5b6470; border-radius: 2px; padding: 3px 8px;">Míos · 5</div>
+          </div>
+        </div>
+
+        <!-- cabecera de columnas: ESTADO · RESPONSABLE · SIGUIENTE ACCIÓN · VENCE -->
+        <div style="display: grid; grid-template-columns: 128px minmax(0, 1fr) 156px 168px 104px; gap: 12px; padding: 8px 16px; border-bottom: 1px solid #dfe3e8; background: #f6f7f9;">
+          <div style="font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: #5b6470;">Estado</div>
+          <div style="font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: #5b6470;">Asunto</div>
+          <div style="font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: #5b6470;">Responsable</div>
+          <div style="font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: #5b6470;">Siguiente acción</div>
+          <div style="font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: #5b6470; text-align: right;">Vence</div>
+        </div>
+
+        <!-- fila 1 · vencido -->
+        <div style="display: grid; grid-template-columns: 128px minmax(0, 1fr) 156px 168px 104px; gap: 12px; padding: 12px 16px; border-bottom: 1px solid #dfe3e8; align-items: center; border-left: 2px solid #a11b1b;">
+          <div style="display: inline-flex; align-items: center; gap: 5px; background: #fbeaea; border: 1px solid #eabcbc; border-radius: 2px; padding: 2px 6px; width: fit-content;">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#a11b1b" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12"/><path d="M18 6 6 18"/></svg>
+            <span style="font-size: 11px; font-weight: 600; color: #a11b1b;">Vencido</span>
+          </div>
+          <div style="min-width: 0;">
+            <div style="font-size: 13px; font-weight: 500;">Isabel Quintero Tovar lleva 5 meses suspendida sin resolución</div>
+            <div class="mono" style="font-size: 11px; color: #5b6470;">90000008 · Enfermera pasante</div>
+          </div>
+          <div style="display: flex; align-items: center; gap: 6px;">
+            <div style="width: 20px; height: 20px; border-radius: 2px; background: #e8eefc; color: #1d4ed8; display: flex; align-items: center; justify-content: center; font-size: 9px; font-weight: 600;">AA</div>
+            <span style="font-size: 12px;">Adriana A.</span>
+          </div>
+          <div style="font-size: 12px; color: #1d4ed8; font-weight: 500;">Reactivar o cerrar</div>
+          <div class="mono" style="font-size: 12px; font-weight: 600; color: #a11b1b; text-align: right;">−4 d</div>
+        </div>
+
+        <!-- fila 2 · por vencer -->
+        <div style="display: grid; grid-template-columns: 128px minmax(0, 1fr) 156px 168px 104px; gap: 12px; padding: 12px 16px; border-bottom: 1px solid #dfe3e8; align-items: center; border-left: 2px solid #8a5a00;">
+          <div style="display: inline-flex; align-items: center; gap: 5px; background: #fbf1de; border: 1px solid #e6cf9a; border-radius: 2px; padding: 2px 6px; width: fit-content;">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#8a5a00" stroke-width="2.2" stroke-linecap="round"><path d="M12 4 2.5 20h19L12 4Z"/></svg>
+            <span style="font-size: 11px; font-weight: 600; color: #8a5a00;">Por vencer</span>
+          </div>
+          <div style="min-width: 0;">
+            <div style="font-size: 13px; font-weight: 500;">3 personas sin documento de identidad cargado</div>
+            <div style="font-size: 11px; color: #5b6470;">El C600 no se puede emitir sin este dato</div>
+          </div>
+          <div style="display: flex; align-items: center; gap: 6px;">
+            <div style="width: 20px; height: 20px; border-radius: 2px; background: #e8eefc; color: #1d4ed8; display: flex; align-items: center; justify-content: center; font-size: 9px; font-weight: 600;">AA</div>
+            <span style="font-size: 12px;">Adriana A.</span>
+          </div>
+          <div style="font-size: 12px; color: #1d4ed8; font-weight: 500;">Ver las 3 personas</div>
+          <div class="mono" style="font-size: 12px; font-weight: 600; color: #8a5a00; text-align: right;">6 d</div>
+        </div>
+
+        <!-- fila 3 · carga con errores -->
+        <div style="display: grid; grid-template-columns: 128px minmax(0, 1fr) 156px 168px 104px; gap: 12px; padding: 12px 16px; border-bottom: 1px solid #dfe3e8; align-items: center; border-left: 2px solid #8a5a00;">
+          <div style="display: inline-flex; align-items: center; gap: 5px; background: #fbf1de; border: 1px solid #e6cf9a; border-radius: 2px; padding: 2px 6px; width: fit-content;">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#8a5a00" stroke-width="2.2" stroke-linecap="round"><path d="M12 4 2.5 20h19L12 4Z"/></svg>
+            <span style="font-size: 11px; font-weight: 600; color: #8a5a00;">Incompleto</span>
+          </div>
+          <div style="min-width: 0;">
+            <div style="font-size: 13px; font-weight: 500;">Carga masiva «docentes-2026.xlsx»: 47 de 52 filas aceptadas</div>
+            <div style="font-size: 11px; color: #5b6470;">5 rechazadas · 3 documento duplicado · 2 sede ajena a la entidad</div>
+          </div>
+          <div style="display: flex; align-items: center; gap: 6px;">
+            <div style="width: 20px; height: 20px; border-radius: 2px; background: #e8eefc; color: #1d4ed8; display: flex; align-items: center; justify-content: center; font-size: 9px; font-weight: 600;">AA</div>
+            <span style="font-size: 12px;">Adriana A.</span>
+          </div>
+          <div style="font-size: 12px; color: #1d4ed8; font-weight: 500;">Corregir las 5 filas</div>
+          <div class="mono" style="font-size: 12px; color: #5b6470; text-align: right;">Hoy</div>
+        </div>
+
+        <!-- fila 4 · espera firma del rector -->
+        <div style="display: grid; grid-template-columns: 128px minmax(0, 1fr) 156px 168px 104px; gap: 12px; padding: 12px 16px; border-bottom: 1px solid #dfe3e8; align-items: center;">
+          <div style="display: inline-flex; align-items: center; gap: 5px; background: #f6f7f9; border: 1px solid #dfe3e8; border-radius: 2px; padding: 2px 6px; width: fit-content;">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#5b6470" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5v5l3 2"/></svg>
+            <span style="font-size: 11px; font-weight: 600; color: #5b6470;">En espera</span>
+          </div>
+          <div style="min-width: 0;">
+            <div style="font-size: 13px; font-weight: 500;">C600 2026 listo para firma</div>
+            <div style="font-size: 11px; color: #5b6470;">Tú ya no puedes avanzarlo: falta la firma de dirección</div>
+          </div>
+          <div style="display: flex; align-items: center; gap: 6px;">
+            <div style="width: 20px; height: 20px; border-radius: 2px; background: #f6f7f9; border: 1px solid #dfe3e8; color: #5b6470; display: flex; align-items: center; justify-content: center; font-size: 9px; font-weight: 600;">RE</div>
+            <span style="font-size: 12px; color: #5b6470;">Rector</span>
+          </div>
+          <div style="font-size: 12px; color: #5b6470;">Recordar por correo</div>
+          <div class="mono" style="font-size: 12px; color: #5b6470; text-align: right;">30 sep</div>
+        </div>
+
+        <!-- fila 5 · solicitud del titular -->
+        <div style="display: grid; grid-template-columns: 128px minmax(0, 1fr) 156px 168px 104px; gap: 12px; padding: 12px 16px; border-bottom: 1px solid #dfe3e8; align-items: center;">
+          <div style="display: inline-flex; align-items: center; gap: 5px; background: #f6f7f9; border: 1px solid #dfe3e8; border-radius: 2px; padding: 2px 6px; width: fit-content;">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#5b6470" stroke-width="2.2" stroke-linecap="round"><path d="M4 6h16v12H4z"/><path d="m4 7 8 6 8-6"/></svg>
+            <span style="font-size: 11px; font-weight: 600; color: #5b6470;">Solicitud</span>
+          </div>
+          <div style="min-width: 0;">
+            <div style="font-size: 13px; font-weight: 500;">Beatriz Duarte Neira pide corregir su fecha de nacimiento</div>
+            <div style="font-size: 11px; color: #5b6470;">Propósito registrado: <span class="mono">solicitud_del_titular</span></div>
+          </div>
+          <div style="display: flex; align-items: center; gap: 6px;">
+            <div style="width: 20px; height: 20px; border-radius: 2px; background: #e8eefc; color: #1d4ed8; display: flex; align-items: center; justify-content: center; font-size: 9px; font-weight: 600;">AA</div>
+            <span style="font-size: 12px;">Adriana A.</span>
+          </div>
+          <div style="font-size: 12px; color: #1d4ed8; font-weight: 500;">Revisar y responder</div>
+          <div class="mono" style="font-size: 12px; color: #5b6470; text-align: right;">12 d</div>
+        </div>
+
+        <!-- fila 6 · al día -->
+        <div style="display: grid; grid-template-columns: 128px minmax(0, 1fr) 156px 168px 104px; gap: 12px; padding: 12px 16px; align-items: center;">
+          <div style="display: inline-flex; align-items: center; gap: 5px; background: #e8f3ee; border: 1px solid #b6d8c8; border-radius: 2px; padding: 2px 6px; width: fit-content;">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#12704a" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5 9 18 20 6"/></svg>
+            <span style="font-size: 11px; font-weight: 600; color: #12704a;">Al día</span>
+          </div>
+          <div style="min-width: 0;">
+            <div style="font-size: 13px; font-weight: 500;">Conteos de matrícula confirmados por los 4 coordinadores</div>
+            <div style="font-size: 11px; color: #5b6470;">883 estudiantes · 13 en condición de discapacidad</div>
+          </div>
+          <div style="display: flex; align-items: center; gap: 6px;">
+            <div style="width: 20px; height: 20px; border-radius: 2px; background: #f6f7f9; border: 1px solid #dfe3e8; color: #5b6470; display: flex; align-items: center; justify-content: center; font-size: 9px; font-weight: 600;">4</div>
+            <span style="font-size: 12px; color: #5b6470;">Coordinación</span>
+          </div>
+          <div style="font-size: 12px; color: #5b6470;">—</div>
+          <div class="mono" style="font-size: 12px; color: #5b6470; text-align: right;">—</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+</x-dc>
+</body>
+</html>

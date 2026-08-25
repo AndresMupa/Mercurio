@@ -1,0 +1,117 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+  <style>
+    body { margin: 0; font-family: 'IBM Plex Sans', ui-sans-serif, system-ui, sans-serif; background: #f6f7f9; color: #16191d; }
+    a { color: #1d4ed8; } a:hover { color: #17369b; }
+    .mono { font-family: 'IBM Plex Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace; font-variant-numeric: tabular-nums; }
+    .lbl { font-size: 11px; font-weight: 600; letter-spacing: 0.09em; text-transform: uppercase; color: #5b6470; }
+    .card { background: #ffffff; border: 1px solid #dfe3e8; border-radius: 4px; display: flex; flex-direction: column; }
+    .head { height: 34px; border-bottom: 1px solid #dfe3e8; display: flex; align-items: center; padding: 0 12px; font-size: 12px; font-weight: 600; background: #f6f7f9; }
+    .body { padding: 32px 24px; display: flex; flex-direction: column; align-items: center; gap: 10px; text-align: center; flex-grow: 1; justify-content: center; }
+    .t { font-size: 14px; font-weight: 600; }
+    .p { font-size: 12.5px; color: #16191d; line-height: 1.55; max-width: 340px; }
+    .btn { height: 34px; padding: 0 14px; border: 0; border-radius: 2px; background: #1d4ed8; color: #ffffff; font-family: inherit; font-size: 12.5px; font-weight: 500; cursor: pointer; }
+    .btn2 { height: 34px; padding: 0 14px; border: 1px solid #dfe3e8; border-radius: 2px; background: #ffffff; font-family: inherit; font-size: 12.5px; cursor: pointer; }
+  </style>
+</helmet>
+
+<div style="padding: 32px; display: flex; flex-direction: column; gap: 24px;">
+
+  <div style="display: flex; flex-direction: column; gap: 4px;">
+    <div class="lbl">EmptyState · principio 5 del sistema de diseño</div>
+    <div style="font-size: 20px; font-weight: 600;">Sin callejones sin salida</div>
+    <div style="font-size: 13px; color: #5b6470; max-width: 860px;">Todo vacío dice <strong>qué es</strong>, <strong>por qué está vacío</strong> y <strong>cuál es la acción</strong>. La distinción que más se descuida: «aquí nunca ha habido nada» y «tu filtro no encontró nada» son estados distintos y necesitan textos distintos.</div>
+  </div>
+
+  <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px;">
+
+    <div class="card">
+      <div class="head">Mi trabajo · nada pendiente</div>
+      <div class="body">
+        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#12704a" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8 12.5 11 15.5 16.5 9"/></svg>
+        <div class="t">Nada pendiente hoy</div>
+        <div class="p">Las 64 personas están al día, los conteos confirmados y el C600 espera firma de dirección. Lo siguiente vence el <span class="mono">30 de septiembre</span>.</div>
+        <button class="btn2" style="margin-top: 4px;">Ver lo que vence este trimestre</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="head">Personas · tenant recién creado</div>
+      <div class="body">
+        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#5b6470" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.4"/><path d="M2.5 20c0-3.5 2.9-5.5 6.5-5.5s6.5 2 6.5 5.5"/><path d="M17.5 10h4"/><path d="M19.5 8v4"/></svg>
+        <div class="t">Todavía no hay nadie registrado</div>
+        <div class="p">Aquí vive la planta del colegio: quién trabaja, con qué vínculo y desde cuándo. Es de donde el C600 saca sus cifras.</div>
+        <div style="display: flex; gap: 8px; margin-top: 4px;">
+          <button class="btn">Cargar la planta desde Excel</button>
+          <button class="btn2">Crear una a una</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="head">Personas · el filtro no encontró</div>
+      <div class="body">
+        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#5b6470" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l5 5"/><path d="M8.5 11h5"/></svg>
+        <div class="t">Ninguna de las 64 personas coincide</div>
+        <div class="p">Buscaste <span class="mono">«orientad»</span> con <strong>estado cerrado</strong> y <strong>sede Boyero</strong>. Hay 1 orientadora, pero su relación está vigente.</div>
+        <div style="display: flex; gap: 8px; margin-top: 4px;">
+          <button class="btn">Quitar el filtro de estado</button>
+          <button class="btn2">Limpiar todo</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="head">Matrícula · año sin conteos</div>
+      <div class="body">
+        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#5b6470" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19V9"/><path d="M10 19V5"/><path d="M16 19v-8"/><path d="M3 21h18"/></svg>
+        <div class="t">2027 aún no tiene conteos</div>
+        <div class="p">La matrícula se registra por grado, jornada, sexo y condición. <strong>Nunca por estudiante</strong>: esta plataforma no guarda identidad de menores.</div>
+        <div style="display: flex; gap: 8px; margin-top: 4px;">
+          <button class="btn">Copiar la estructura de 2026</button>
+          <button class="btn2">Empezar en blanco</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="head">Auditoría · periodo sin eventos</div>
+      <div class="body">
+        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#5b6470" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 4 6v6c0 5 3.4 8.2 8 9 4.6-.8 8-4 8-9V6l-8-3Z"/><path d="M9 12l2 2 4-4"/></svg>
+        <div class="t">Nadie tocó datos sensibles esa semana</div>
+        <div class="p">Del 3 al 9 de agosto no hubo ni una lectura P3 ni un intento denegado. <strong>Vacío aquí es una buena noticia</strong>, no un fallo de carga.</div>
+        <button class="btn2" style="margin-top: 4px;">Ampliar a todo agosto</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="head">Ficha · sin documentos</div>
+      <div class="body">
+        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#8a5a00" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h9l4 4v14H6z"/><path d="M14 3v5h5"/><path d="M12 11v6"/><path d="m9.5 13.5 2.5-2.5 2.5 2.5"/></svg>
+        <div class="t">Falta el documento de identidad</div>
+        <div class="p">Sin él, esta persona <strong>no se puede reportar en el C600</strong>. Es uno de los 3 casos que aparecen en tu bandeja desde hace 6 días.</div>
+        <div style="display: flex; gap: 8px; margin-top: 4px;">
+          <button class="btn">Cargar documento</button>
+          <button class="btn2">Pedírselo por correo</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div style="background: #ffffff; border: 1px dashed #dfe3e8; border-radius: 4px; padding: 16px; display: flex; flex-direction: column; gap: 8px;">
+    <div class="lbl">Lo que estos seis tienen en común</div>
+    <div style="font-size: 12.5px; line-height: 1.6; max-width: 1000px;">Ninguno dice «no hay datos». Cada uno nombra <strong>la cifra concreta</strong> de la situación —64 personas, 3 pendientes, 1 orientadora— porque un vacío explicado con números se puede resolver y uno explicado con adjetivos no. El de auditoría es el que más se equivoca en otros productos: ahí un vacío es lo deseable, y pintarlo como un problema enseña a la gente a desconfiar de la pantalla.</div>
+  </div>
+</div>
+</x-dc>
+</body>
+</html>

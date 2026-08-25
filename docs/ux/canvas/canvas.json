@@ -1,0 +1,28 @@
+{
+  "artboards": [
+    { "file": "Main.dc.html", "x": 0, "y": 0, "w": 1200, "h": 1420, "title": "Decisiones y sistema" },
+    { "file": "Login.dc.html", "x": 1300, "y": 0, "w": 1000, "h": 1040, "title": "Acceso con MFA" },
+
+    { "file": "MyWorkTalentoHumano.dc.html", "x": 0, "y": 1560, "w": 1440, "h": 1000, "title": "MY WORK · talento humano" },
+    { "file": "MyWorkRector.dc.html", "x": 1540, "y": 1560, "w": 1440, "h": 900, "title": "MY WORK · rector" },
+    { "file": "RectorMovil.dc.html", "x": 3080, "y": 1560, "w": 390, "h": 844, "title": "Rector en el móvil" },
+
+    { "file": "Personas.dc.html", "x": 0, "y": 2700, "w": 1440, "h": 1000, "title": "Personas · tabla densa" },
+    { "file": "FichaPersona.dc.html", "x": 1540, "y": 2700, "w": 1440, "h": 1040, "title": "Ficha de persona" },
+
+    { "file": "AltaPersona.dc.html", "x": 0, "y": 3880, "w": 1440, "h": 1060, "title": "J1 · alta de persona" },
+    { "file": "PurposeDialog.dc.html", "x": 1540, "y": 3880, "w": 1240, "h": 640, "title": "Diálogo de propósito P3", "is_interactive": true },
+    { "file": "CierreRelacion.dc.html", "x": 2880, "y": 3880, "w": 1000, "h": 1050, "title": "J5 · cierre con impacto" },
+
+    { "file": "EstadosVacios.dc.html", "x": 0, "y": 5080, "w": 1360, "h": 930, "title": "Estados vacíos" },
+    { "file": "EstadosError.dc.html", "x": 1460, "y": 5080, "w": 1360, "h": 940, "title": "Estados de error" }
+  ],
+  "annotations": [
+    { "id": "empieza-aqui", "x": -560, "y": 0, "w": 460, "text": "Empieza por «Decisiones y sistema»: son las cinco cosas que hace falta aprobar antes de que B8 escriba una línea de Vue.\n\nLos colores y los radios ya estaban en el repositorio desde A1. Lo que decide este lienzo es lo que faltaba: tipografía, escala y anatomía de los componentes." },
+    { "id": "bandejas", "x": -560, "y": 1560, "w": 460, "text": "Las dos bandejas, lado a lado.\n\nLa diferencia no es de estilo: el rector no tiene botones de alta ni de baja porque su rol no los tiene. Comparar las dos es la forma rápida de ver si la frontera quedó donde se decidió el 25 de agosto." },
+    { "id": "densidad", "x": -560, "y": 2700, "w": 460, "text": "Densidad alta: filas de 36 px y tipo de 12,5 px.\n\nLa columna Documento va enmascarada por defecto. Verla pasa por el diálogo de propósito, que está una fila más abajo." },
+    { "id": "recorridos", "x": -560, "y": 3880, "w": 460, "text": "Los dos recorridos críticos del Slice 0 y el componente que los cruza.\n\nJ1 muestra sus cuatro errores; J5 muestra qué se pierde y —igual de importante— qué no. El diálogo de propósito es el único artboard con controles vivos: prueba a elegir otro propósito." },
+    { "id": "estados", "x": -560, "y": 5080, "w": 460, "text": "Ni un vacío que diga «no hay datos», ni un error que diga «algo salió mal».\n\nCada uno nombra la cifra concreta de su situación y a quién acudir." }
+  ],
+  "launch": { "view": "canvas" }
+}

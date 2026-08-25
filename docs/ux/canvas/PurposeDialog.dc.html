@@ -1,0 +1,160 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+  <style>
+    body { margin: 0; font-family: 'IBM Plex Sans', ui-sans-serif, system-ui, sans-serif; background: #f6f7f9; color: #16191d; }
+    a { color: #1d4ed8; } a:hover { color: #17369b; }
+    .mono { font-family: 'IBM Plex Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace; font-variant-numeric: tabular-nums; }
+    .lbl { font-size: 11px; font-weight: 600; letter-spacing: 0.09em; text-transform: uppercase; color: #5b6470; }
+  </style>
+</helmet>
+
+<div style="padding: 32px; display: flex; flex-direction: column; gap: 24px;">
+
+  <div style="display: flex; flex-direction: column; gap: 4px;">
+    <div class="lbl">PurposeDialog · el componente propio de este producto</div>
+    <div style="font-size: 20px; font-weight: 600;">Antes de leer un dato P3, para qué</div>
+    <div style="font-size: 13px; color: #5b6470; max-width: 860px;">No es fricción gratuita: es el registro que sostiene la auditoría. Por eso el propósito viene <strong>sugerido por el contexto</strong> y se confirma en un clic. Prueba a elegir otro.</div>
+  </div>
+
+  <div style="display: grid; grid-template-columns: 420px minmax(0, 1fr); gap: 24px; align-items: start;">
+
+    <!-- ── el diálogo ─────────────────────────────────── -->
+    <div style="background: #ffffff; border: 1px solid #dfe3e8; border-radius: 4px; box-shadow: 0 8px 24px rgba(22, 25, 29, 0.12);">
+      <div style="padding: 16px; border-bottom: 1px solid #dfe3e8; display: flex; gap: 12px; align-items: flex-start;">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#8a5a00" stroke-width="1.8" stroke-linecap="round" style="flex-shrink: 0; margin-top: 1px;"><rect x="5" y="10.5" width="14" height="10" rx="1.5"/><path d="M8.5 10.5V7a3.5 3.5 0 0 1 7 0v3.5"/></svg>
+        <div style="display: flex; flex-direction: column; gap: 2px;">
+          <div style="font-size: 14px; font-weight: 600;">Ver el documento de Beatriz Duarte Neira</div>
+          <div style="font-size: 12px; color: #5b6470;">Dato <span class="mono" style="font-weight: 500;">P3</span> · queda registrado con tu nombre</div>
+        </div>
+      </div>
+
+      <div style="padding: 16px; display: flex; flex-direction: column; gap: 12px;">
+        <div class="lbl">¿Para qué lo necesitas?</div>
+
+        <div style="display: flex; flex-direction: column; gap: 6px;">
+          <sc-for list="{{propositos}}" as="p" hint-placeholder-count="4">
+            <button onClick="{{p.pick}}" style="text-align: left; font-family: inherit; cursor: pointer; border-radius: 2px; padding: 10px 12px; display: flex; align-items: center; gap: 10px; border: {{p.borde}}; background: {{p.fondo}};">
+              <span style="width: 14px; height: 14px; border-radius: 50%; flex-shrink: 0; border: {{p.radioBorde}}; background: {{p.radioFondo}};"></span>
+              <span style="display: flex; flex-direction: column; gap: 1px; min-width: 0; flex-grow: 1;">
+                <span style="font-size: 13px; font-weight: 500; color: #16191d;">{{p.titulo}}</span>
+                <span class="mono" style="font-size: 11px; color: #5b6470;">{{p.clave}}</span>
+              </span>
+              <sc-if value="{{p.sugerido}}" hint-placeholder-val="{{true}}">
+                <span style="font-size: 11px; font-weight: 600; color: #1d4ed8; background: #e8eefc; border: 1px solid #b9cbf5; border-radius: 2px; padding: 1px 5px; flex-shrink: 0;">SUGERIDO</span>
+              </sc-if>
+            </button>
+          </sc-for>
+        </div>
+
+        <div style="font-size: 11px; color: #5b6470; line-height: 1.5; border-top: 1px solid #dfe3e8; padding-top: 12px;">La lista es cerrada. Un propósito escrito a mano no se podría auditar ni contar, y sería otra forma de no declarar nada.</div>
+      </div>
+
+      <div style="padding: 16px; border-top: 1px solid #dfe3e8; display: flex; gap: 8px;">
+        <button style="flex-grow: 1; height: 40px; border: 0; border-radius: 2px; background: #1d4ed8; color: #ffffff; font-family: inherit; font-size: 13px; font-weight: 500; cursor: pointer;">Ver el documento</button>
+        <button style="height: 40px; padding: 0 16px; border: 1px solid #dfe3e8; border-radius: 2px; background: #ffffff; font-family: inherit; font-size: 13px; cursor: pointer;">Cancelar</button>
+      </div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 24px;">
+
+      <!-- ── lo que queda registrado ────────────────────── -->
+      <div style="background: #ffffff; border: 1px solid #dfe3e8; border-radius: 4px;">
+        <div style="padding: 12px 16px; border-bottom: 1px solid #dfe3e8; font-size: 13px; font-weight: 600;">Lo que queda registrado al confirmar</div>
+        <div style="padding: 16px; display: flex; flex-direction: column; gap: 8px;">
+          <div style="display: grid; grid-template-columns: 148px minmax(0, 1fr); gap: 12px; align-items: baseline;">
+            <span class="lbl">Acción</span><span class="mono" style="font-size: 12px;">identities.document_number.leer</span>
+          </div>
+          <div style="display: grid; grid-template-columns: 148px minmax(0, 1fr); gap: 12px; align-items: baseline;">
+            <span class="lbl">Resultado</span><span style="font-size: 12px; color: #12704a; font-weight: 600;">allowed</span>
+          </div>
+          <div style="display: grid; grid-template-columns: 148px minmax(0, 1fr); gap: 12px; align-items: baseline;">
+            <span class="lbl">Clasificación</span><span class="mono" style="font-size: 12px;">P3</span>
+          </div>
+          <div style="display: grid; grid-template-columns: 148px minmax(0, 1fr); gap: 12px; align-items: baseline;">
+            <span class="lbl">Propósito</span><span class="mono" style="font-size: 12px; color: #1d4ed8; font-weight: 500;">{{elegido}}</span>
+          </div>
+          <div style="display: grid; grid-template-columns: 148px minmax(0, 1fr); gap: 12px; align-items: baseline;">
+            <span class="lbl">Actor</span><span style="font-size: 12px;">Adriana Acosta · talento humano</span>
+          </div>
+          <div style="display: grid; grid-template-columns: 148px minmax(0, 1fr); gap: 12px; align-items: baseline;">
+            <span class="lbl">Correlación</span><span class="mono" style="font-size: 12px; color: #5b6470;">018f2c1a-…-9d41</span>
+          </div>
+          <div style="border-top: 1px solid #dfe3e8; margin-top: 4px; padding-top: 12px; font-size: 11.5px; color: #5b6470; line-height: 1.5;">Nunca el valor leído: solo que se leyó, quién, para qué y cuándo. El rastro no puede convertirse él mismo en una copia del dato.</div>
+        </div>
+      </div>
+
+      <!-- ── denegaciones ───────────────────────────────── -->
+      <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px;">
+        <div style="background: #ffffff; border: 1px solid #dfe3e8; border-left: 3px solid #a11b1b; border-radius: 4px; padding: 16px; display: flex; flex-direction: column; gap: 8px;">
+          <div style="display: flex; align-items: center; gap: 6px;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#a11b1b" stroke-width="2.4" stroke-linecap="round"><circle cx="12" cy="12" r="8.5"/><path d="M6 6l12 12"/></svg>
+            <span style="font-size: 13px; font-weight: 600; color: #a11b1b;">Sin propósito</span>
+          </div>
+          <div style="font-size: 12px; line-height: 1.55;">Cerrar el diálogo sin elegir no muestra el dato. La petición se deniega y también deja evento.</div>
+          <div class="mono" style="font-size: 11px; color: #5b6470; background: #f6f7f9; border: 1px solid #dfe3e8; border-radius: 2px; padding: 6px 8px;">denied · abac.purpose</div>
+        </div>
+
+        <div style="background: #ffffff; border: 1px solid #dfe3e8; border-left: 3px solid #a11b1b; border-radius: 4px; padding: 16px; display: flex; flex-direction: column; gap: 8px;">
+          <div style="display: flex; align-items: center; gap: 6px;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#a11b1b" stroke-width="2.4" stroke-linecap="round"><path d="M12 3 4 6v6c0 5 3.4 8.2 8 9 4.6-.8 8-4 8-9V6l-8-3Z"/><path d="M9.5 12.5 12 15l3-4"/></svg>
+            <span style="font-size: 13px; font-weight: 600; color: #a11b1b;">Techo del rol</span>
+          </div>
+          <div style="font-size: 12px; line-height: 1.55;">Un coordinador tiene techo P2: <strong>a él ni siquiera se le ofrece el diálogo</strong>. Pedir un propósito que no va a servir es peor que decir que no.</div>
+          <div class="mono" style="font-size: 11px; color: #5b6470; background: #f6f7f9; border: 1px solid #dfe3e8; border-radius: 2px; padding: 6px 8px;">denied · abac.techo</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+</x-dc>
+
+<script data-dc-script>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    // El contexto de apertura decide el sugerido: aquí se abrió desde la ficha
+    // de una persona, así que el sugerido es la gestión laboral.
+    this.state = { elegido: 'gestion_laboral' };
+  }
+
+  renderVals() {
+    const catalogo = [
+      { clave: 'gestion_laboral', titulo: 'Gestión laboral', sugerido: true },
+      { clave: 'reporte_c600', titulo: 'Reporte C600 al DANE', sugerido: false },
+      { clave: 'autoevaluacion_evi', titulo: 'Autoevaluación EVI', sugerido: false },
+      { clave: 'solicitud_del_titular', titulo: 'Solicitud del titular', sugerido: false },
+      { clave: 'auditoria_interna', titulo: 'Auditoría interna', sugerido: false },
+    ];
+
+    const elegido = this.state.elegido;
+
+    return {
+      elegido: elegido,
+      propositos: catalogo.map((p) => {
+        const activo = p.clave === elegido;
+        return {
+          clave: p.clave,
+          titulo: p.titulo,
+          sugerido: p.sugerido,
+          borde: activo ? '1px solid #1d4ed8' : '1px solid #dfe3e8',
+          fondo: activo ? '#e8eefc' : '#ffffff',
+          radioBorde: activo ? '4px solid #1d4ed8' : '1px solid #9aa4b0',
+          radioFondo: '#ffffff',
+          pick: () => this.setState({ elegido: p.clave }),
+        };
+      }),
+    };
+  }
+}
+</script>
+</body>
+</html>
