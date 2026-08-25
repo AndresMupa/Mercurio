@@ -7,16 +7,16 @@ namespace Database\Seeders;
 use Illuminate\Database\Seeder;
 
 /**
- * Vacío a propósito.
+ * Carga el tenant de demostración con datos sintéticos (paso B6).
  *
- * El tenant de demostración con datos sintéticos es el paso B6 de PLAN.md, y los datos
- * reales del personal no entran hasta el D1, con el Slice 0 en verde. Un seeder que
- * "solo para probar" cree personas rompería la regla de datos del PLAN.
+ * **Todo lo que crea es inventado.** Los datos reales del personal del colegio no entran
+ * hasta el paso D1, y solo si el Slice 0 pasó su Definition of Done completo: esa
+ * precondición es dura y está escrita en PLAN.md.
  */
 final class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
-        //
+        $this->call(AnchorTenantSeeder::class);
     }
 }

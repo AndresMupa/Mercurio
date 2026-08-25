@@ -21,3 +21,10 @@ yarn-error.log
 /.nova
 /.vscode
 /.zed
+
+# Playwright deja aquí trazas y capturas de pantalla de las corridas fallidas. Una captura
+# de una pantalla con datos de persona es P3 en un fichero suelto: no entra al repositorio.
+/test-results
+/playwright-report
+/blob-report
+/playwright/.cache

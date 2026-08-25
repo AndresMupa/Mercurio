@@ -7,22 +7,23 @@
 
 ## Slice actual
 
-**Slice 0 — Foundation** · **A1, A2, B1, B2, B3, B4 y B5 completos**, siguiente **B6** de `PLAN.md`
+**Slice 0 — Foundation** · **A1, A2, B1, B2, B3, B4, B5 y B6 completos**, siguiente **B7** de `PLAN.md`
 `COMMERCIAL VALUE: —` (único slice estructural permitido) · `DoD LEVEL: B` · `DATA CLASSIFICATION: P3`
 
-Estado: esquema, dominio, autorización, auditoría y autenticación construidos. **364
-pruebas, 538 aserciones.** Las 216 celdas de la matriz de permisos tienen prueba propia, los
-nueve invariantes del SPEC también, y los siete de la matriz. B4 encontró y cerró **una fuga
-real de datos P3 hacia los ficheros de log**; B5 resolvió el nudo del tenant antes de
-autenticar. El DoD de nivel B queda en verde salvo TYPECHECK, sin herramienta por una
-restricción de red del entorno. El harness operativo se cumple solo: un commit con una prueba
-de aislamiento rota **no pasa**, verificado a mano. El colegio ancla dio luz verde al piloto
-el 23 de agosto de 2026.
+Estado: esquema, dominio, autorización, auditoría, autenticación y tenant de demostración
+construidos. **380 pruebas, 1.270 aserciones.** Las 216 celdas de la matriz de permisos tienen
+prueba propia, los nueve invariantes del SPEC también, y los siete de la matriz. B4 encontró y
+cerró **una fuga real de datos P3 hacia los ficheros de log**; B5 resolvió el nudo del tenant
+antes de autenticar; B6 dejó un demo con la forma exacta del ancla y sin un solo dato real. El
+DoD de nivel B queda en verde salvo TYPECHECK, sin herramienta por una restricción de red del
+entorno. El harness operativo se cumple solo: un commit con una prueba de aislamiento rota
+**no pasa**, verificado a mano. El colegio ancla dio luz verde al piloto el 23 de agosto de 2026.
 
 **Hay cuatro cosas esperando respuesta humana**, todas en `## Bloqueos`: si la aplicación
 debe poder borrar un tenant, dos huecos de la máquina de estados que B2 interpretó, y **qué
-permisos le corresponden al `rector`**, que la matriz nombra como rol pero deja sin columna
-—y eso bloquea su pantalla del paso B7—.
+permisos le corresponden al `rector`**, que la matriz nombra como rol pero deja sin columna.
+Esa última **bloquea el paso B7**, que es el siguiente: su pantalla no se puede diseñar sin
+saber qué ve el rector.
 
 > **`PLAN.md` es el documento que se ejecuta.** Un paso por sesión, en orden, marcando la casilla
 > y haciendo commit al terminar cada uno.
@@ -625,6 +626,109 @@ El correo probado **no** se guarda en la auditoría: es P2, y cuando hay usuario
 | **CA-09** — el login exige MFA para todo rol con techo P3 | verde, con prueba por rol y también de que los de techo P2 no lo necesitan |
 
 
+## Paso B6 — hecho el 25-ago-2026
+
+Tenant de demostración con **la forma** del colegio ancla y **ningún dato real**.
+**380 pruebas, 1.270 aserciones.**
+
+**Lo que quedó construido**
+
+| Qué | Dónde |
+|---|---|
+| Generador de personas ficticias, determinista | `database/seeders/SyntheticPeople.php` |
+| La matrícula del ancla como dato, no como bucle | `database/seeders/AnchorEnrollment.php` |
+| El tenant demo y el vecino de aislamiento | `database/seeders/AnchorTenantSeeder.php` |
+| Planta física de la sede (aulas y áreas) | `database/migrations/2026_08_25_000200_add_plant_to_sites.php` |
+| 16 pruebas de CA-10, CA-11 y del generador | `tests/Domains/People/AnchorSeederTest.php` |
+
+Verificado contra `docs/anchor/colegio-finlandes.md`, cifra por cifra: 64 personas
+—47 docentes de aula (4 preescolar · 18 primaria · 15 secundaria · 10 media), 6 directivos
+docentes, 2 de apoyo pedagógico, 4 administrativos y 5 de servicios generales—, sede rural
+con código DANE de 12 dígitos, 29 aulas, 2.476 m² construidos sobre lote de 4.633 m², y una
+matrícula que suma **exactamente 883** estudiantes con **13** en condición de discapacidad.
+
+### Un hueco de la Fase Cero que solo apareció al sembrar
+
+CA-10 pide «29 aulas» y **no había dónde ponerlas**. `docs/anchor/colegio-finlandes.md` sí
+lista la planta física entre lo que la sede necesita, pero `core-entities.md` no lo recogió y
+la migración de fundación tampoco. No es una decisión que se tomara: es un dato que se cayó
+entre dos documentos y que ningún paso anterior tenía motivo para echar en falta.
+
+Se añadió la migración `2026_08_25_000200`, se corrigió `core-entities.md`, y los tres campos
+quedan **P1**: describen un inmueble, no a una persona, así que `sites` sigue clasificada
+entera como P1 y la compuerta de clasificación no cambia. El Slice 1 los va a leer: el módulo
+de infraestructura del C600 los pide.
+
+### Por qué las cifras se comprueban al detalle
+
+El Slice 1 deriva el C600 de este tenant. Si el demo sumara 881 estudiantes, un total
+equivocado en el reporte no se podría atribuir ni al motor ni a los datos. Por eso la
+matrícula está escrita a mano como tabla y **las expectativas de las pruebas están copiadas
+del documento del ancla, no leídas del seeder**: si alguien edita la plantilla, la prueba
+rompe en vez de seguirle la corriente.
+
+Lo mismo con el escalafón docente. El ancla **no alcanza** el 80 % de la escala del Decreto
+2277 —es justo por lo que pierde los 3,2 puntos de tarifa—, y el simulador del paso C4
+necesita partir de esa foto: si el demo ya estuviera en el 80 %, no habría nada que simular.
+
+### Que los datos sean ficticios es comprobable, no una promesa
+
+Los nombres salen de un vocabulario cerrado en `SyntheticPeople`, separado del seeder a
+propósito para que la frase «todos los nombres y documentos son ficticios» se verifique
+mirando **un solo fichero**. Los documentos van desde 90.000.000 hacia arriba, de uno en uno:
+no es un rango que la Registraduría asigne hoy y, al ser secuencial, se distingue de un
+documento real de un vistazo.
+
+Hay prueba de que **cada** nombre del tenant demo sale de ese vocabulario y de que **cada**
+documento está en el rango. Pegar una lista real en medio de la carga rompe la suite.
+
+### Dos defectos encontrados construyendo
+
+1. **PHP convierte las claves numéricas de un array en enteros.** La tabla de grados usa
+   `'1' => [...]` y llegaba al bucle como `int 1`, reventando contra el `string $grade` de la
+   firma. Se recupera el tipo antes de usarlo.
+2. **El seeder dejaba un tenant a medias si se ejecutaba dos veces.** Ahora se niega y lo
+   dice. Deliberadamente **no borra** el tenant anterior: borrarlo arrastra en cascada todo lo
+   suyo, y es justamente la operación irreversible que sigue esperando decisión humana en el
+   bloqueo 3. Un seeder no la toma por su cuenta.
+
+### Las pruebas se comprobaron rompiéndolas
+
+Antes de darlas por buenas se metieron tres defectos a propósito —un grado con dos
+estudiantes de menos, un nombre pegado a mano fuera del generador, y texto libre en una
+columna agregada— y se confirmó que **cinco pruebas fallan**. Una prueba que no falla cuando
+debería es peor que no tenerla. Las sondas se revirtieron.
+
+### Decisiones tomadas en este paso
+
+1. **Las cifras esperadas se copian del documento del ancla, no se leen del seeder.** Una
+   prueba que deriva su expectativa del código que prueba no comprueba nada.
+2. **El generador es determinista.** Un demo que cambia de nombres en cada ejecución no se
+   puede comentar con nadie —«mira la fila de Ana» deja de significar algo— y vuelve frágil
+   cualquier prueba escrita sobre él.
+3. **Sembrar dos veces se niega; no sobrescribe.** Ver el defecto 2, arriba.
+4. **CA-11 se prueba dos veces y en dos planos distintos.** B1 comprueba el **esquema** —que
+   no exista una columna identificadora—; B6 comprueba los **datos** —que en las columnas que
+   sí existen no se cuele texto libre—, que es por donde entraría un nombre («Juan, 3.º B»)
+   sin necesidad de cambiar el esquema.
+5. **Ninguna fila de matrícula puede venir en cero.** Un conteo en cero no es un dato: es una
+   casilla del formulario que alguien dejó puesta, y el C600 la rechazaría.
+
+### Criterios
+
+| Criterio | Estado |
+|---|---|
+| **CA-10** — el seeder genera un tenant demo con la forma del ancla, sin un solo dato real | verde, con prueba de cada cifra por separado |
+| **CA-11** — `enrollment_snapshots` no permite identificar a un estudiante | verde en el esquema desde B1; B6 añade la prueba sobre los datos sembrados |
+
+### Compuertas — DoD nivel A
+
+`LINT PASS` (Pint) · `UNIT PASS` e `INTEGRATION PASS` (380 pruebas) · `BUILD PASS` (Vite) ·
+`DOCUMENTATION UPDATED`. Fuera de lo exigido por el nivel A, también en verde:
+`TENANT ISOLATION PASS` (35 pruebas) y `E2E PASS` (3 pruebas).
+**`TYPECHECK` sigue sin herramienta**, por la restricción de red que arrastra la deuda desde A2.
+
+
 ## Decisiones tomadas
 
 | Fecha | Decisión | Dónde |
@@ -639,6 +743,8 @@ El correo probado **no** se guarda en la auditoría: es P2, y cuando hay usuario
 | 2026-08-23 | Datos sintéticos hasta que el Slice 0 pase su DoD; reales solo del personal | `PLAN.md` B6 y D1 |
 | 2026-08-23 | El colegio ancla confirmó el piloto | `docs/anchor/colegio-finlandes.md` |
 | 2026-08-23 | Sesión, caché y colas en Redis para no crear tablas de personas sin `tenant_id` | A1, arriba |
+| 2026-08-25 | La planta física de la sede (aulas, área construida, área de lote) entra en `sites` como P1 | B6 · `core-entities.md` |
+| 2026-08-25 | El tenant demo se llama `colegio-demo` y el de aislamiento `colegio-vecino`; sembrar dos veces se niega | B6, arriba |
 
 ## Bloqueos
 
@@ -741,6 +847,7 @@ la bandeja de alguien que no tiene permisos definidos.
 
 | Qué | Por qué importa | Cuándo se paga |
 |---|---|---|
+| El seeder del ancla se ejecuta entero una vez por prueba que lo necesita: ~1,1 s × 11, unos 13 s de los 45 que tarda la suite | No es incorrecto, pero es el tramo más caro y crecerá con cada prueba que se apoye en el demo | Cuando estorbe: sembrar una vez por fichero y aislar con transacción, o reducir la plantilla a una muestra proporcional |
 | Compuerta TYPECHECK sin herramienta | Es una de las seis del DoD nivel A. A2 no pudo cerrarla: `api.github.com` bloqueado | Primera sesión con red sin restricción |
 | En acciones de colección —listar, crear— no hay `resourceTenantId` que comparar y esa comprobación se salta | La protección por fila queda en el global scope y la RLS, que sí la cubren con 30 pruebas. Hueco teórico: una Policy con la instancia delante que olvide pasar su `tenant_id` | Cuando existan controladores reales (B8): que el contexto se construya desde el modelo y no a mano |
 | TOTP implementado en el repositorio en vez de con una librería | `api.github.com` está bloqueado y no se puede instalar ninguna. Está verificado contra los seis vectores del RFC 6238, pero una librería mantenida recibe revisiones que este código no | Cuando la red lo permita: sustituir por dentro; las pruebas del RFC siguen valiendo |
@@ -766,33 +873,40 @@ la bandeja de alguien que no tiene permisos definidos.
 
 ## Próximo paso concreto
 
-**Paso B6 de `PLAN.md`:** tenant demo con datos sintéticos. **DoD nivel A**, más ligero que
-los anteriores.
+**Paso B7 de `PLAN.md`:** diseño de las pantallas del Slice 0, **antes** de construirlas.
+Skill **`design`**, obligatoria en este paso (`docs/skills.md`: el diseño va antes de escribir
+frontend). DoD nivel A.
 
-Lo que pide: un seeder que genere un tenant con la forma del colegio ancla descrita en
-`docs/anchor/colegio-finlandes.md` —una entidad jurídica, una sede rural con código DANE,
-64 personas con su distribución real por tipo de personal, estatuto docente, nivel
-educativo, sexo y rango de edad, y `enrollment_snapshots` que sumen 883 estudiantes por
-grado, jornada y condición, con 13 en condición de discapacidad—. Más un segundo tenant
-para las pruebas de aislamiento.
+> **Está bloqueado, y hay que resolverlo antes de empezar.** B7 diseña, entre otras, la
+> pantalla del **rector**, y `docs/architecture/permissions.md` lo nombra como rol pero **no le
+> da columna en la matriz**. No se puede dibujar qué ve alguien de quien no está escrito qué
+> puede ver. Es el bloqueo 5 de `## Bloqueos`: **preguntar antes de diseñar**, no interpretar.
 
-**Todos los nombres y documentos son ficticios y generados.** Criterios CA-10 y CA-11.
+Lo que hay disponible para el diseño, ya construido y probado:
+
+- **Un tenant demo real que se puede mirar**: `php artisan db:seed`. 64 personas con nombres
+  ficticios, una sede rural con 29 aulas, 883 estudiantes como conteos. Las pantallas se
+  pueden diseñar sobre datos con la forma verdadera en vez de sobre `lorem ipsum`, que es
+  media razón por la que B6 va antes que B7.
+- `docs/ux/design-system.md`, `docs/ux/personas.md` y `docs/ux/journeys.md`, de la Fase Cero.
+- La matriz de permisos: qué ve cada rol, salvo el hueco del rector.
 
 Cosas del terreno que conviene saber antes de empezar:
 
-- `DatabaseSeeder` está vacío a propósito desde A1, con un comentario explicando por qué.
-- **Crear un tenant exige fijar el contexto al id nuevo antes de insertar**: `tenants` está
-  bajo RLS con su propio `id` como llave. El helper `createTenant()` de `tests/Pest.php` ya
-  lo hace y sirve de referencia.
-- Toda escritura deja `AuditEvent` desde B4. Un seeder de 64 personas generará bastantes
-  eventos; es correcto, pero conviene saberlo antes de mirar la tabla.
-- El trigger de mayoría de edad rechaza cualquier `birth_date` de menor: la distribución por
-  rango de edad tiene que respetarlo.
-- `enrollment_snapshots` no admite ninguna columna identificadora, y hay prueba.
+- El E2E de A2 prueba **una** pantalla (`FoundationCheck`) y comprueba tres cosas que el
+  diseño no puede romper: que Vue monta, que el estado **no depende solo del color**, y que
+  se opera con teclado. Cualquier pantalla nueva hereda esas tres.
+- No hay pantallas de autenticación todavía: B5 construyó el flujo, **B8 construye el
+  formulario**. Y ahí es donde entra la deuda del CVE-2026-48019 —`email:rfc,strict`, nunca
+  la regla `email` por defecto—.
+- Solo hay Policies para `Person`, `Relationship` y `AuditEvent`. La matriz declara 17
+  recursos: lo que se diseñe para el resto habrá que autorizarlo llamando al `Authorizer`.
 
 > **Nota de entorno para quien retome:** sin Docker, los servicios locales se levantan con
 > `pg_ctlcluster 16 main start` y `redis-server --daemonize yes`. La base `platform` y los dos
 > roles ya existen y sobreviven entre sesiones; `platform_test` se re-migra con
 > `composer test:prepare`. Los gates: `composer lint`, `composer test`, `composer test:tenant`,
-> `npm run e2e` (con `PLAYWRIGHT_CHROMIUM_PATH=/opt/pw-browsers/chromium` en este entorno).
-> La suite tarda ~30 s.
+> `npm run e2e` (con `PLAYWRIGHT_CHROMIUM_PATH=/opt/pw-browsers/chromium` en este entorno;
+> sin esa variable Playwright pide `npx playwright install` y falla). Los scripts de Composer
+> necesitan `COMPOSER_ALLOW_SUPERUSER=1` si la sesión corre como root. La suite tarda ~45 s.
+> `php artisan db:seed` deja el tenant demo del ancla listo para mirar.

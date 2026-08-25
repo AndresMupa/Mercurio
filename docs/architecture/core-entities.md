@@ -41,9 +41,16 @@ Raíz del aislamiento. Todo lo demás cuelga de aquí.
 
 ### `sites`
 `id` · `tenant_id` · `legal_entity_id` · `name` · `dane_code` (12 dígitos) · `address` ·
-`area_type` (rural | urbana) · `department_code` · `municipality_code` · `is_work_center`
+`area_type` (rural | urbana) · `department_code` · `municipality_code` · `is_work_center` ·
+`classroom_count` · `built_area_m2` · `lot_area_m2`
 
 El colegio ancla tiene una sede rural en la vereda Boyero. El `dane_code` es la llave del C600.
+
+Los tres campos de planta física entraron en B6 (migración `2026_08_25_000200`). Estaban en
+`docs/anchor/colegio-finlandes.md` —29 aulas, 2.476 m² construidos sobre lote de 4.633 m²—
+pero no se recogieron aquí en la Fase Cero, así que la migración de fundación tampoco los
+creó. Son **P1**: describen un inmueble, no a una persona; la tabla sigue siendo P1 entera.
+El módulo de infraestructura del C600 los pide, de modo que el Slice 1 los va a leer.
 
 ### `people` — solo personas con relación, nunca menores
 `id` · `tenant_id` · `given_names` · `family_names` · `birth_date` · `sex` ·

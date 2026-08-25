@@ -182,7 +182,7 @@ separados: el dueño del esquema (migraciones) y el rol de la aplicación (runti
 > también en tiempo. Sesiones cifradas, solo HTTPS y `SameSite=strict` por defecto.
 > Detalle en `STATE.md`.
 
-## [ ] B6 · Tenant demo con datos sintéticos
+## [x] B6 · Tenant demo con datos sintéticos
 
 **Objetivo:** poder demostrar y probar sin un solo dato real.
 

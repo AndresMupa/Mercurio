@@ -14,11 +14,17 @@ final class Site extends PlatformModel
     protected $fillable = [
         'legal_entity_id', 'name', 'dane_code', 'address',
         'area_type', 'department_code', 'municipality_code', 'is_work_center',
+        'classroom_count', 'built_area_m2', 'lot_area_m2',
     ];
 
     protected function casts(): array
     {
-        return ['is_work_center' => 'boolean'];
+        return [
+            'is_work_center' => 'boolean',
+            'classroom_count' => 'integer',
+            'built_area_m2' => 'integer',
+            'lot_area_m2' => 'integer',
+        ];
     }
 
     public function legalEntity(): BelongsTo
