@@ -3,6 +3,7 @@
 use App\Domains\Shared\Application\AuditRecorder;
 use App\Http\Middleware\BindTenantToConnection;
 use App\Http\Middleware\HandleInertiaRequests;
+use App\Http\Middleware\ResolveTenantFromRequest;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -22,6 +23,9 @@ return Application::configure(basePath: dirname(__DIR__))
          * ninguna ruta nazca fuera de la capa de aplicación del aislamiento.
          */
         $middleware->web(append: [
+            // El orden importa: resolver el tenant va **antes** que todo, porque sin él
+            // la RLS no deja buscar al usuario ni auditar un intento fallido de acceso.
+            ResolveTenantFromRequest::class,
             BindTenantToConnection::class,
             HandleInertiaRequests::class,
         ]);

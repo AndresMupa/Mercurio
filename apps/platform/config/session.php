@@ -47,7 +47,9 @@ return [
     |
     */
 
-    'encrypt' => env('SESSION_ENCRYPT', false),
+    // Cifrada por defecto. La sesion vive en Redis, que en un incidente puede
+    // volcarse entero: su contenido no deberia ser legible.
+    'encrypt' => env('SESSION_ENCRYPT', true),
 
     /*
     |--------------------------------------------------------------------------
@@ -169,7 +171,9 @@ return [
     |
     */
 
-    'secure' => env('SESSION_SECURE_COOKIE'),
+    // Solo por HTTPS. El defecto de Laravel es null, que en la practica significa
+    // tambien por HTTP: una cookie de sesion de datos de personas no viaja en claro.
+    'secure' => env('SESSION_SECURE_COOKIE', true),
 
     /*
     |--------------------------------------------------------------------------
@@ -199,7 +203,8 @@ return [
     |
     */
 
-    'same_site' => env('SESSION_SAME_SITE', 'lax'),
+    // strict y no lax: aqui no hay flujos de vuelta desde terceros que lo necesiten.
+    'same_site' => env('SESSION_SAME_SITE', 'strict'),
 
     /*
     |--------------------------------------------------------------------------

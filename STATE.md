@@ -7,16 +7,17 @@
 
 ## Slice actual
 
-**Slice 0 — Foundation** · **A1, A2, B1, B2, B3 y B4 completos**, siguiente **B5** de `PLAN.md`
+**Slice 0 — Foundation** · **A1, A2, B1, B2, B3, B4 y B5 completos**, siguiente **B6** de `PLAN.md`
 `COMMERCIAL VALUE: —` (único slice estructural permitido) · `DoD LEVEL: B` · `DATA CLASSIFICATION: P3`
 
-Estado: esquema, dominio, autorización y auditoría construidos. **320 pruebas, 456
-aserciones.** Las 216 celdas de la matriz de permisos tienen prueba propia, los nueve
-invariantes del SPEC también, y los siete de la matriz. B4 encontró y cerró **una fuga real
-de datos P3 hacia los ficheros de log**. El DoD de nivel B queda en verde salvo TYPECHECK,
-sin herramienta por una restricción de red del entorno. El harness operativo se cumple solo:
-un commit con una prueba de aislamiento rota **no pasa**, verificado a mano. El colegio ancla
-dio luz verde al piloto el 23 de agosto de 2026.
+Estado: esquema, dominio, autorización, auditoría y autenticación construidos. **364
+pruebas, 538 aserciones.** Las 216 celdas de la matriz de permisos tienen prueba propia, los
+nueve invariantes del SPEC también, y los siete de la matriz. B4 encontró y cerró **una fuga
+real de datos P3 hacia los ficheros de log**; B5 resolvió el nudo del tenant antes de
+autenticar. El DoD de nivel B queda en verde salvo TYPECHECK, sin herramienta por una
+restricción de red del entorno. El harness operativo se cumple solo: un commit con una prueba
+de aislamiento rota **no pasa**, verificado a mano. El colegio ancla dio luz verde al piloto
+el 23 de agosto de 2026.
 
 **Hay cuatro cosas esperando respuesta humana**, todas en `## Bloqueos`: si la aplicación
 debe poder borrar un tenant, dos huecos de la máquina de estados que B2 interpretó, y **qué
@@ -526,6 +527,104 @@ es una mitigación, no la solución. **Es trabajo de B5**, que es quien decide c
 el tenant antes de autenticar. Anotado en `## Deuda conocida`.
 
 
+## Paso B5 — hecho el 23-ago-2026
+
+Autenticación, MFA y roles con alcance. **364 pruebas, 538 aserciones.**
+
+### Lo construido
+
+| Qué | Dónde |
+|---|---|
+| Función de resolución de tenant, `SECURITY DEFINER` | `database/migrations/2026_08_25_000100_add_tenant_resolver.php` |
+| Resolución por subdominio o cabecera | `app/Domains/Identity/Application/TenantResolver.php` |
+| Middleware que resuelve antes de autenticar | `app/Http/Middleware/ResolveTenantFromRequest.php` |
+| TOTP según RFC 6238 | `app/Domains/Identity/Domain/Totp.php` |
+| Quién necesita segundo factor, deducido del techo del rol | `app/Domains/Identity/Application/MfaRequirement.php` |
+| Intento de acceso: límite, no enumeración, MFA, auditoría | `app/Domains/Identity/Application/LoginAttempt.php` |
+| Vectores del RFC y pruebas del flujo | `tests/Domains/Identity/{TotpTest,AuthenticationTest}.php` |
+
+### El nudo que B4 dejó abierto, resuelto
+
+Desde B1 `tenants` está bajo RLS, lo que hacía imposible el login: hay que saber a qué
+tenant pertenece quien entra **antes** de poder fijar `app.tenant_id`. Y por lo mismo, un
+intento de acceso fallido no se podía auditar.
+
+La salida no fue relajar la política, sino una función que es la única grieta y está tallada
+para no servir para nada más: devuelve **un uuid**, exige slug exacto, solo resuelve tenants
+activos y `REVOKE`a a todo el mundo salvo al rol de aplicación.
+
+**`SECURITY DEFINER` por sí solo no bastaba**, y encontrarlo costó una vuelta: la primera
+versión devolvía NULL incluso para un tenant activo, porque `FORCE ROW LEVEL SECURITY`
+—puesto en B1 a propósito— aplica la política **también al dueño de la tabla**, que es
+justamente bajo quien corre una función `SECURITY DEFINER`. Hizo falta una política de solo
+lectura para el dueño del esquema. Las políticas permisivas se combinan con OR, así que el
+rol de aplicación sigue viendo solo su fila y **no gana ninguna capacidad de enumerar**;
+hay prueba de que `%`, `colegio` y `colegio%` devuelven null y de que la tabla entera
+sigue dando cero filas.
+
+Se descartó la alternativa de activar la política con una variable de sesión
+(`app.tenant_lookup = 'on'`) porque el rol de aplicación puede fijarla él mismo con
+`set_config`: sería una puerta con la llave puesta al lado.
+
+**Con esto, un intento de acceso fallido ya queda auditado**, que es lo que B4 no podía
+hacer.
+
+### TOTP escrito a mano, y por qué eso es defendible
+
+`api.github.com` sigue bloqueado, así que no se puede instalar ninguna librería de segundo
+factor. Escribirlo no es «criptografía propia»: TOTP es HMAC-SHA1 sobre un contador de
+tiempo más un truncado, todo con `hash_hmac` de PHP. Lo delicado es equivocarse en el
+truncado o en el relleno del contador, y contra eso hay una defensa concreta: **el RFC 6238
+publica vectores de prueba y la implementación se compara con los seis, uno a uno**. Pasan
+todos. Si mañana se instala una librería, se cambia por dentro y las pruebas siguen valiendo.
+
+Decisiones que no son cosméticas: SHA1 porque es lo que implementan los autenticadores
+reales; ventana de ±1 intervalo para el reloj desfasado sin regalar dos minutos a un código
+robado; comparación en tiempo constante y **sin salir del bucle al acertar**, porque salir
+antes revelaría por tiempo qué intervalo coincidió.
+
+### No enumeración de usuarios, también en el tiempo
+
+Correo inexistente y contraseña incorrecta devuelven **el mismo resultado y el mismo
+mensaje**. El motivo real vive solo en `audit_events`, que sí puede leer quien tenga
+permiso, y hay prueba de que la auditoría sí los distingue.
+
+La uniformidad tiene que ser además temporal: si el caso «usuario inexistente» volviera
+antes por no ejecutar el hash, el reloj delataría lo que el mensaje calla. Por eso se
+verifica siempre contra un hash señuelo. **Ese señuelo se genera con el driver configurado y
+no se escribe a mano**: el literal inventado de la primera versión no era bcrypt válido y
+`Hash::check` lanzaba, que es como se descubrió.
+
+El correo probado **no** se guarda en la auditoría: es P2, y cuando hay usuario
+`actor_user_id` ya dice quién. Hay prueba.
+
+### Decisiones tomadas en este paso
+
+1. **Quién necesita MFA se deduce del techo del rol, no de una lista aparte.** Cuando se
+   añada un rol con techo P3 quedará cubierto sin que nadie se acuerde.
+2. **Un rol P3 sin MFA configurado no entra «mientras tanto».** Dejarlo pasar hasta que lo
+   configure sería justo el agujero que el segundo factor viene a tapar.
+3. **Un rol vencido deja de exigir MFA**, porque deja de otorgar nada (CA-08). El motivo por
+   el que se pide un segundo factor no puede ser un rol que ya no sirve.
+4. **El límite de intentos es por tenant, correo e IP a la vez.** Solo por IP deja pasar el
+   ataque distribuido; solo por correo permite bloquear a alguien a propósito desde fuera.
+5. **Sesión cifrada, solo por HTTPS y `SameSite=strict` por defecto**, no por variable de
+   entorno. La sesión vive en Redis, que en un incidente puede volcarse entero. Se prefiere
+   que cueste bajar la protección a que cueste subirla.
+6. **Si la sesión no corresponde al tenant resuelto, se aborta con 403** en vez de decidir
+   cuál de los dos gana.
+7. **No resolver el tenant no cambia la respuesta.** Contestar «ese colegio no existe» sería
+   la enumeración que el resolver evita.
+
+### Criterios
+
+| Criterio | Estado |
+|---|---|
+| **CA-07** — cerrar la relación revoca el acceso en la siguiente petición | verde desde B3; sigue con prueba |
+| **CA-08** — un `role_assignment` vencido no otorga permisos | verde desde B2/B3; B5 añade que tampoco exige MFA |
+| **CA-09** — el login exige MFA para todo rol con techo P3 | verde, con prueba por rol y también de que los de techo P2 no lo necesitan |
+
+
 ## Decisiones tomadas
 
 | Fecha | Decisión | Dónde |
@@ -644,11 +743,11 @@ la bandeja de alguien que no tiene permisos definidos.
 |---|---|---|
 | Compuerta TYPECHECK sin herramienta | Es una de las seis del DoD nivel A. A2 no pudo cerrarla: `api.github.com` bloqueado | Primera sesión con red sin restricción |
 | En acciones de colección —listar, crear— no hay `resourceTenantId` que comparar y esa comprobación se salta | La protección por fila queda en el global scope y la RLS, que sí la cubren con 30 pruebas. Hueco teórico: una Policy con la instancia delante que olvide pasar su `tenant_id` | Cuando existan controladores reales (B8): que el contexto se construya desde el modelo y no a mano |
+| TOTP implementado en el repositorio en vez de con una librería | `api.github.com` está bloqueado y no se puede instalar ninguna. Está verificado contra los seis vectores del RFC 6238, pero una librería mantenida recibe revisiones que este código no | Cuando la red lo permita: sustituir por dentro; las pruebas del RFC siguen valiendo |
+| La deuda de Laravel 11 con CVE-2026-48019 sigue **sin tocar** | B5 no usó la regla de validación `email` —busca por correo directamente— así que el flujo actual no la dispara. **B8 sí construirá el formulario de acceso** y ahí sí | B8: usar `email:rfc,strict`, nunca la regla `email` por defecto |
 | Solo hay Policies para Person, Relationship y AuditEvent | La matriz declara 17 recursos; el resto se autoriza llamando al `Authorizer` directamente, sin Policy | B8, al construir las pantallas que los usan |
 | OBSERVABILITY: hay correlación por petición, tenant en cada línea, logs estructurados JSON, health check y comprobación de dependencias. **Faltan métricas, tracing distribuido y monitoreo de colas** (§21 del harness) | Es compuerta del DoD nivel B | Antes de B9, que es donde se cierra el DoD del slice |
 | El invariante 5 lo sostienen el modelo y el repositorio, no la base | `platform_app` conserva `DELETE` sobre `relationships`. `audit_events` sí lo tiene revocado en base | Considerar revocarlo también aquí; encaja con la decisión pendiente del bloqueo 3 |
-| `audit_events` no admite `INSERT` sin tenant resuelto: la RLS lo rechaza | Un login fallido ocurre **antes** de resolver el tenant, y CA-04 exige auditar la denegación. B4 mitigó: `recordError()` lo detecta y deja constancia en el log en vez de perder el suceso, pero eso no es auditarlo | **B5**, que es quien decide cómo se resuelve el tenant antes de autenticar |
-| La RLS sobre `tenants` bloquea también la resolución de tenant por `slug` antes del login | B5 necesita encontrar el tenant para poder autenticar dentro de él | B5: resolver por host/slug y fijar el contexto antes de autenticar; si hace falta lectura previa, función `SECURITY DEFINER` que devuelva un solo id y no permita enumerar |
 | `enrollment_snapshots` no tiene identificadores, pero la combinación sede + año + grado + jornada + sexo + rango de edad + condición con `headcount` bajo es cuasi-identificadora | Dentro del tenant es aceptable —el colegio ya conoce a sus estudiantes—; fuera del tenant no | C5: la supresión de celdas con `headcount < 5` en exportaciones ya está prevista en `core-entities.md` |
 | El E2E de Playwright no corre en el hook de pre-commit | Solo el grupo `tenant-isolation` bloquea el commit; un E2E roto pasaría | Cuando exista CI, que es su sitio: 4 s por commit no se justifican |
 | Laravel 11.56 arrastra tres avisos de seguridad sin parche en su rama, uno **alto**: CVE-2026-48019, inyección CRLF en la regla de validación `email`. Corregido solo en 12.60+ | El paso B5 implementa autenticación y validará correos | B5: usar `email:rfc,strict` en vez de la regla `email` por defecto, o evaluar con ADR el salto a Laravel 12 |
@@ -667,45 +766,33 @@ la bandeja de alguien que no tiene permisos definidos.
 
 ## Próximo paso concreto
 
-**Paso B5 de `PLAN.md`:** autenticación, MFA y roles con alcance.
+**Paso B6 de `PLAN.md`:** tenant demo con datos sintéticos. **DoD nivel A**, más ligero que
+los anteriores.
 
-Lo que pide el paso: MFA obligatorio para todo rol con techo P3, sesiones seguras, rate
-limiting, protección contra enumeración de usuarios, `role_assignments` con alcance y
-vigencia, y que cerrar una relación revoque el acceso en la siguiente petición sin cerrar
-sesión.
+Lo que pide: un seeder que genere un tenant con la forma del colegio ancla descrita en
+`docs/anchor/colegio-finlandes.md` —una entidad jurídica, una sede rural con código DANE,
+64 personas con su distribución real por tipo de personal, estatuto docente, nivel
+educativo, sexo y rango de edad, y `enrollment_snapshots` que sumen 883 estudiantes por
+grado, jornada y condición, con 13 en condición de discapacidad—. Más un segundo tenant
+para las pruebas de aislamiento.
 
-**Buena parte ya está hecha y B5 no tiene que rehacerla:**
+**Todos los nombres y documentos son ficticios y generados.** Criterios CA-10 y CA-11.
 
-- `role_assignments` con alcance y vigencia: implementado y probado en B2/B3.
-  `RoleAssignment::isEffectiveOn()` y el scope `effective()` resuelven CA-08.
-- **CA-07 ya está resuelto** en B3: la relación laboral vigente es condición de acceso,
-  resuelta en cada petición y nunca cacheada. Cerrar la relación corta el acceso en la
-  siguiente petición.
-- `RoleKey::classificationCeiling()` ya dice qué roles tienen techo P3, que es exactamente
-  el conjunto al que CA-09 exige MFA.
-- El modelo `User` existe con `mfa_enabled`, `mfa_secret` cifrado y `password` con cast
-  `hashed`. `config/auth.php` ya apunta a `App\Domains\Identity\Domain\User`.
+Cosas del terreno que conviene saber antes de empezar:
 
-**Lo que falta y es el trabajo de B5:**
-
-1. El flujo de autenticación en sí, con segundo factor obligatorio para techo P3 (CA-09).
-2. Rate limiting y protección contra enumeración de usuarios: que «este correo no existe» y
-   «la contraseña no coincide» sean indistinguibles desde fuera.
-3. Sesiones seguras y su invalidación.
-4. **Resolver el tenant antes de autenticar.** Es el nudo del paso, y bloquea dos cosas
-   anotadas en `## Deuda conocida`: hoy `users` está bajo RLS, así que buscar al usuario por
-   correo antes de tener tenant devuelve cero filas; y `audit_events` no admite `INSERT` sin
-   tenant, así que un login fallido no se puede auditar. Lo natural es resolver el tenant
-   por host o slug, fijar el contexto y autenticar dentro de él; si hiciera falta leer
-   `tenants` antes, una función `SECURITY DEFINER` que devuelva un solo id sin permitir
-   enumerar.
-5. **Ojo con la deuda de Laravel 11**: CVE-2026-48019, inyección CRLF en la regla de
-   validación `email`. B5 valida correos. Usar `email:rfc,strict` en vez de la regla por
-   defecto, o evaluar con ADR el salto a Laravel 12.
+- `DatabaseSeeder` está vacío a propósito desde A1, con un comentario explicando por qué.
+- **Crear un tenant exige fijar el contexto al id nuevo antes de insertar**: `tenants` está
+  bajo RLS con su propio `id` como llave. El helper `createTenant()` de `tests/Pest.php` ya
+  lo hace y sirve de referencia.
+- Toda escritura deja `AuditEvent` desde B4. Un seeder de 64 personas generará bastantes
+  eventos; es correcto, pero conviene saberlo antes de mirar la tabla.
+- El trigger de mayoría de edad rechaza cualquier `birth_date` de menor: la distribución por
+  rango de edad tiene que respetarlo.
+- `enrollment_snapshots` no admite ninguna columna identificadora, y hay prueba.
 
 > **Nota de entorno para quien retome:** sin Docker, los servicios locales se levantan con
 > `pg_ctlcluster 16 main start` y `redis-server --daemonize yes`. La base `platform` y los dos
 > roles ya existen y sobreviven entre sesiones; `platform_test` se re-migra con
 > `composer test:prepare`. Los gates: `composer lint`, `composer test`, `composer test:tenant`,
 > `npm run e2e` (con `PLAYWRIGHT_CHROMIUM_PATH=/opt/pw-browsers/chromium` en este entorno).
-> La suite tarda ~35 s.
+> La suite tarda ~30 s.

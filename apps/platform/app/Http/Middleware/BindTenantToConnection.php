@@ -25,6 +25,18 @@ final class BindTenantToConnection
         $tenantId = $request->user()?->tenant_id;
 
         if ($tenantId) {
+            // Desde B5 el tenant ya viene resuelto de la petición por
+            // ResolveTenantFromRequest. Si el usuario autenticado pertenece a otro, algo
+            // va muy mal —sesión reutilizada entre subdominios, o algo peor— y lo seguro
+            // es no servir la petición en vez de decidir cuál de los dos gana.
+            $resuelto = TenantContext::idOrNull();
+
+            abort_if(
+                $resuelto !== null && $resuelto !== $tenantId,
+                403,
+                'La sesión no corresponde a este tenant.'
+            );
+
             TenantContext::set($tenantId);
         }
 

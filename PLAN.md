@@ -161,7 +161,7 @@ separados: el dueño del esquema (migraciones) y el rol de la aplicación (runti
 > sin el redactor sí aparecían. Queda para B5 auditar lo que ocurre **antes** de resolver el
 > tenant. Detalle en `STATE.md`.
 
-## [ ] B5 · Autenticación, MFA y roles con alcance
+## [x] B5 · Autenticación, MFA y roles con alcance
 
 **Prompt:**
 > Implementa autenticación con MFA obligatorio para todo rol con techo P3, sesiones seguras,
@@ -171,6 +171,16 @@ separados: el dueño del esquema (migraciones) y el rol de la aplicación (runti
 
 **Criterios:** CA-07, CA-08, CA-09.
 **DoD:** nivel B.
+
+> Hecho el 23-ago-2026. 364 pruebas. Resuelto el nudo que B4 dejó abierto: el tenant se
+> resuelve **antes** de autenticar, con una función `SECURITY DEFINER` que devuelve un uuid
+> y no permite enumerar. `SECURITY DEFINER` por sí solo no bastaba —`FORCE ROW LEVEL
+> SECURITY` aplica también al dueño de la tabla—, lo que costó una vuelta y quedó explicado
+> en la migración. Con eso, **un intento de acceso fallido ya se puede auditar**. TOTP
+> escrito en el repositorio por no poder instalar librerías, verificado contra los seis
+> vectores del RFC 6238. Correo inexistente y contraseña incorrecta son indistinguibles,
+> también en tiempo. Sesiones cifradas, solo HTTPS y `SameSite=strict` por defecto.
+> Detalle en `STATE.md`.
 
 ## [ ] B6 · Tenant demo con datos sintéticos
 
