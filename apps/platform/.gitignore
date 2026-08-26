@@ -28,3 +28,6 @@ yarn-error.log
 /playwright-report
 /blob-report
 /playwright/.cache
+
+# Volcado de Redis cuando se arranca sin configurar el directorio de trabajo.
+dump.rdb

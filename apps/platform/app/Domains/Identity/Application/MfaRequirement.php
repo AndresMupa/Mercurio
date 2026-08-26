@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Domains\Identity\Application;
 
 use App\Domains\Identity\Domain\Authorization\RoleKey;
-use App\Domains\Identity\Domain\RoleAssignment;
 use App\Domains\Identity\Domain\User;
 use App\Domains\Shared\Domain\DataClassification;
 use Illuminate\Support\Carbon;
@@ -22,6 +21,8 @@ use Illuminate\Support\Carbon;
  */
 final class MfaRequirement
 {
+    public function __construct(private readonly EffectiveRoles $roles) {}
+
     public function isRequiredFor(User $user): bool
     {
         foreach ($this->effectiveRoleKeys($user) as $role) {
@@ -33,24 +34,15 @@ final class MfaRequirement
         return false;
     }
 
-    /** @return list<RoleKey> */
+    /**
+     * La consulta vive en `EffectiveRoles` desde B8, cuando la navegación necesitó lo
+     * mismo. Se conserva este método porque es el nombre por el que ya lo llaman las
+     * pruebas de B5, pero no duplica nada.
+     *
+     * @return list<RoleKey>
+     */
     public function effectiveRoleKeys(User $user): array
     {
-        $roles = [];
-
-        $assignments = RoleAssignment::with('role')
-            ->where('user_id', $user->getKey())
-            ->effective(Carbon::today())
-            ->get();
-
-        foreach ($assignments as $assignment) {
-            $role = RoleKey::tryFrom((string) $assignment->role?->key);
-
-            if ($role !== null) {
-                $roles[] = $role;
-            }
-        }
-
-        return $roles;
+        return $this->roles->of($user, Carbon::today());
     }
 }

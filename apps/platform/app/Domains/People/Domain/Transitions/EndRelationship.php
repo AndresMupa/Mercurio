@@ -66,6 +66,17 @@ final class EndRelationship extends RelationshipTransition
         return [
             ...parent::auditContext($relationship, $context),
             'valid_to' => $relationship->valid_to?->toDateString(),
+            /*
+             * El motivo va al evento del cierre y no a una columna de `relationships`
+             * (añadido en B8, cuando el recorrido J5 lo pidió de verdad).
+             *
+             * Es de lista cerrada, así que es P1: no dice nada de la persona, dice qué
+             * clase de terminación fue. Alimenta el reporte de rotación y la causal ante
+             * el Ministerio, y vivir en el evento significa que queda ligado a **este**
+             * cierre concreto: si mañana se reabre y se vuelve a cerrar por otra causa,
+             * la traza conserva las dos, que es justo lo que una columna perdería.
+             */
+            'motivo' => $context['motivo'] ?? null,
         ];
     }
 }

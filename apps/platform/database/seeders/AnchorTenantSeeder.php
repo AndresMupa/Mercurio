@@ -93,6 +93,10 @@ final class AnchorTenantSeeder extends Seeder
 
         $demo = $this->createAnchorShapedTenant();
 
+        // Cuentas para poder entrar. B6 dejó un colegio de 64 personas y ninguna forma de
+        // mirarlo desde el navegador, que para un demo es como no tenerlo.
+        (new DemoUsers)->crear();
+
         // Segundo tenant, exigido por B6: sin él, las pruebas de aislamiento no tienen
         // contra qué aislar y pasarían por no haber nada que filtrar.
         $this->createNeighbourTenant();

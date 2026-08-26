@@ -197,7 +197,7 @@ separados: el dueño del esquema (migraciones) y el rol de la aplicación (runti
 **Criterios:** CA-10, CA-11.
 **DoD:** nivel A.
 
-## [ ] B7 · Diseño de las pantallas del Slice 0
+## [x] B7 · Diseño de las pantallas del Slice 0
 
 **Objetivo:** ver y corregir la interfaz **antes** de construirla.
 
@@ -216,7 +216,7 @@ separados: el dueño del esquema (migraciones) y el rol de la aplicación (runti
 **Entregable:** lienzo de diseño revisado y aprobado por el humano antes de programar.
 **DoD:** no aplica; es entrada del paso siguiente.
 
-## [ ] B8 · Frontend del Slice 0
+## [x] B8 · Frontend del Slice 0
 
 **Skills:** `dataviz` solo si alguna pantalla lleva indicador o gráfico.
 

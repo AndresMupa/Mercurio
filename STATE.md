@@ -7,11 +7,14 @@
 
 ## Slice actual
 
-**Slice 0 — Foundation** · **A1 … B6 completos**; **B7 entregado y esperando aprobación**
+**Slice 0 — Foundation** · **A1 … B8 completos**, siguiente **B9** (cierre del slice)
 `COMMERCIAL VALUE: —` (único slice estructural permitido) · `DoD LEVEL: B` · `DATA CLASSIFICATION: P3`
 
-Estado: esquema, dominio, autorización, auditoría, autenticación y tenant de demostración
-construidos. **425 pruebas, 1.332 aserciones.** Las 243 celdas de la matriz de permisos tienen
+Estado: **el producto se puede usar.** Esquema, dominio, autorización, auditoría,
+autenticación, tenant de demostración y ahora las pantallas: se entra con contraseña y
+segundo factor, se ve la bandeja, se lista la planta, se da de alta a alguien y se cierra su
+relación. **445 pruebas y 1.403 aserciones**, más **13 de accesibilidad en navegador real**.
+Las 243 celdas de la matriz de permisos tienen
 prueba propia, los nueve invariantes del SPEC también, y los siete de la matriz. B4 encontró y
 cerró **una fuga real de datos P3 hacia los ficheros de log**; B5 resolvió el nudo del tenant
 antes de autenticar; B6 dejó un demo con la forma exacta del ancla y sin un solo dato real. El
@@ -27,8 +30,13 @@ el SPEC, y la aplicación ya **no puede borrar un tenant**. Con eso, **B7 está 
 Siguen abiertos los dos bloqueos de entorno, que no dependen de una decisión sino de una red
 sin restricciones: `docker compose up` sin ejecutar y la compuerta TYPECHECK sin herramienta.
 
-**Lo que hace falta ahora es humano, no técnico:** el lienzo de B7 está entregado y
-**B8 no empieza hasta que alguien lo apruebe o lo corrija**. Enlace y detalle en el paso B7.
+El lienzo de B7 quedó aprobado y **B8 está cerrado**: los doce componentes base, las pantallas
+y los recorridos J1 y J5 de punta a punta. **Queda B9**, que cierra el Slice 0 y es donde,
+según `PLAN.md`, «termina lo que no se puede reparar después».
+
+**Para entrar al demo:** `coordinacion@colegio-demo.test` con `demo-mercurio-2026`, y la
+cabecera `X-Tenant: colegio-demo` mientras no haya subdominios. Las cuatro cuentas están en
+`database/seeders/DemoUsers.php`.
 
 > **`PLAN.md` es el documento que se ejecuta.** Un paso por sesión, en orden, marcando la casilla
 > y haciendo commit al terminar cada uno.
@@ -734,7 +742,7 @@ debería es peor que no tenerla. Las sondas se revirtieron.
 **`TYPECHECK` sigue sin herramienta**, por la restricción de red que arrastra la deuda desde A2.
 
 
-## Paso B7 — lienzo entregado el 25-ago-2026, **pendiente de aprobación**
+## Paso B7 — lienzo entregado y **aprobado** el 25-ago-2026
 
 Doce artboards con las pantallas del Slice 0, sus estados vacíos y sus errores.
 
@@ -742,10 +750,14 @@ Doce artboards con las pantallas del Slice 0, sus estados vacíos y sus errores.
 **Fuentes:** `docs/ux/canvas/*.dc.html` + `canvas.json`. El fichero publicado no se versiona
 —2,6 MB de los que casi todo es el editor— y se reconstruye con la skill `design`.
 
-> **La casilla de `PLAN.md` sigue sin marcar a propósito.** El entregable del paso no es «un
-> lienzo», es «un lienzo **revisado y aprobado por el humano** antes de programar». Mientras
-> no haya ese visto bueno, **B8 no empieza**: construir componentes sobre un diseño sin
-> aprobar es exactamente lo que el paso viene a evitar.
+> **Cómo llegó la aprobación, para que conste.** El visto bueno se pidió por escrito dos veces
+> —el entregable del paso no es «un lienzo», es «un lienzo revisado y aprobado»— y la respuesta
+> fue **«CONTINUA»**. Se tomó como aprobación, no como silencio: el humano tenía el lienzo
+> delante y la petición explícita de revisarlo.
+>
+> Queda anotado así porque **la aprobación fue implícita, no punto por punto**. Si más adelante
+> alguna de las seis decisiones no convence, esto explica por qué se construyó sobre ellas. Las
+> pantallas se pueden rehacer; lo caro es descubrirlo con los doce componentes ya escritos.
 
 ### Lo que el lienzo decide
 
@@ -794,6 +806,90 @@ vivos. El resto son maquetas estáticas, que es lo que pide un lienzo de revisi�
 falta prototipo navegable para enseñárselo al colegio, es otro encargo.
 
 
+## Paso B8 — hecho el 25-ago-2026
+
+Frontend del Slice 0. **445 pruebas, 1.403 aserciones**, más 13 de accesibilidad en navegador.
+
+### Lo construido
+
+| Qué | Dónde |
+|---|---|
+| Los doce componentes base del sistema de diseño | `resources/js/Components/` |
+| Cinco pantallas: acceso, bandeja, planta, ficha y alta | `resources/js/Pages/` |
+| La capa de aplicación que consumen, sin lógica en controladores | `app/Domains/*/Application/` |
+| Menú derivado de permisos, no escrito a mano | `app/Domains/Identity/Application/Navigation.php` |
+| J1 y J5 de punta a punta, con los cuatro errores del recorrido | `tests/Feature/RecorridosTest.php` |
+| Los datos P3 nunca viajan enteros al navegador | `tests/Feature/DatosSensiblesTest.php` |
+| Accesibilidad probada navegando, no inspeccionando atributos | `tests/E2E/accesibilidad.spec.js` |
+| Cuentas para poder entrar al demo | `database/seeders/DemoUsers.php` |
+
+### Tres fallos reales que destapó el paso
+
+1. **La resolución de modelos por URL corría antes de fijar el tenant.** `SubstituteBindings`
+   está por defecto antes de los middlewares propios, así que la consulta que convierte
+   `/personas/{persona}` en un modelo la hacía la RLS sin contexto: **toda ruta con un
+   identificador habría respondido 404, a todo el mundo y siempre.** Se descubrió porque la
+   segunda petición de una prueba fallaba y la primera no —la primera aún arrastraba el
+   contexto del `beforeEach`—. Corregido moviendo `SubstituteBindings` al final del grupo.
+
+2. **La pantalla de diagnóstico de A1 era pública y contaba de más.** Los nombres de los dos
+   roles de base de datos, el nombre de la base y la versión exacta de PostgreSQL. Nada de
+   eso le sirve a un visitante y todo le sirve a quien busque contra qué apuntar. Movida a
+   `/estado` y detrás de acceso; el monitoreo sigue teniendo `/up`.
+
+3. **Un `enum` como clave de array.** `Purpose::GestionLaboral => '…'` compila y revienta al
+   recorrerlo. Reventaba la ficha entera con un 500.
+
+### Decisiones tomadas en este paso
+
+1. **La navegación la calcula el servidor por usuario.** El rector no recibe la entrada que
+   no puede usar, así que no hay nada que ocultar en el cliente. Un menú que el cliente
+   filtra es un menú que el cliente puede desfiltrar, y además enseña el mapa completo de lo
+   que existe a quien no debería conocerlo.
+2. **El menú pregunta a la matriz, no al `Authorizer`.** El autorizador audita cada
+   denegación, y seis entradas por cada carga de página enterrarían los intentos que sí
+   importan bajo ruido. El menú es una pista; la decisión sigue tomándose en el controlador,
+   con auditoría, cuando alguien entra de verdad. Como las dos leen la misma matriz, no se
+   pueden desincronizar.
+3. **Los datos P3 se enmascaran en el servidor, no en la vista.** Un dato que viaja completo
+   hasta el navegador ya salió, aunque el CSS lo tape. Hay prueba de que el documento entero
+   no aparece en el cuerpo de la respuesta del listado ni de la ficha.
+4. **El motivo del cierre va al evento de auditoría, no a una columna.** Queda ligado a *ese*
+   cierre: si mañana se reabre y se vuelve a cerrar por otra causa, la traza conserva las
+   dos, que es justo lo que una columna perdería.
+5. **IBM Plex servida por la propia aplicación**, no por Google Fonts. Un enlace a
+   `fonts.googleapis.com` filtra la IP de cada persona del colegio a un tercero en cada
+   carga, y en un producto que guarda datos de personas eso es una transferencia que habría
+   que declarar. Empaquetada pesa unos kilobytes.
+6. **Búsqueda insensible a tildes con `translate()` y no con la extensión `unaccent`.**
+   `unaccent` es mejor pero instalarla exige superusuario, y el rol que corre las migraciones
+   no lo es a propósito. No es un adorno: media planta se apellida Ibáñez o Bermúdez y nadie
+   escribe las tildes en un buscador.
+7. **La contraseña del demo está escrita en el código a propósito.** Es una credencial de
+   demostración sobre datos inventados; esconderla en una variable de entorno solo
+   conseguiría que pareciera un secreto de verdad. D1 exige revisar credenciales antes de
+   tocar datos reales.
+
+### La deuda del CVE, pagada
+
+`email:rfc,strict` en el formulario de acceso, que es donde por fin se valida un correo.
+Era la deuda que B5 dejó anotada para este paso.
+
+### Criterios
+
+| Criterio | Estado |
+|---|---|
+| **J1 completo de punta a punta** | verde · 8 pruebas, incluidos los cuatro caminos de error |
+| **J5 completo de punta a punta** | verde · 5 pruebas, con impacto calculado y cierre auditado |
+
+### Compuertas — DoD nivel B
+
+`LINT PASS` · `UNIT` e `INTEGRATION PASS` (445) · `BUILD PASS` · `AUTHORIZATION PASS` (243
+celdas) · `TENANT ISOLATION PASS` (41) · `E2E PASS` (13) · `ACCESSIBILITY PASS` ·
+`MIGRATIONS PASS` · `DOCUMENTATION UPDATED`.
+**`TYPECHECK` y `OBSERVABILITY` siguen abiertas**, las dos arrastradas y anotadas en deuda.
+
+
 ## Decisiones tomadas
 
 | Fecha | Decisión | Dónde |
@@ -813,6 +909,10 @@ falta prototipo navegable para enseñárselo al colegio, es otro encargo.
 | 2026-08-25 | El `rector` lee lo suyo y no administra: personas, relaciones, matrícula, reportes y auditoría; nada de altas, bajas, catálogo ni plataforma | `permissions.md` · bloqueo 5 |
 | 2026-08-25 | Confirmadas `SUSPENDED → ACTIVE` (evento propio) y `SUSPENDED → ENDED` | `specs/identity/SPEC.md` · bloqueo 4 |
 | 2026-08-25 | La aplicación **no** puede borrar un tenant: `DELETE` y `TRUNCATE` revocados | migración `2026_08_25_000300` · bloqueo 3 |
+| 2026-08-25 | La navegación la calcula el servidor por usuario: el rol que no puede algo no recibe la entrada | B8 · `Navigation.php` |
+| 2026-08-25 | Los datos P3 se enmascaran en el servidor, no en la vista | B8 · `PersonDirectory` y `PersonFile` |
+| 2026-08-25 | IBM Plex servida por la aplicación, no por Google Fonts | B8 · `resources/js/app.js` |
+| 2026-08-25 | La pantalla de diagnóstico pasa a `/estado` y detrás de acceso | B8, arriba |
 
 ## Bloqueos
 
@@ -919,6 +1019,8 @@ ahora cotejará 243 celdas contra el documento en vez de 216.
 |---|---|---|
 | El seeder del ancla se ejecuta entero una vez por prueba que lo necesita: ~1,1 s × 11, unos 13 s de los 45 que tarda la suite | No es incorrecto, pero es el tramo más caro y crecerá con cada prueba que se apoye en el demo | Cuando estorbe: sembrar una vez por fichero y aislar con transacción, o reducir la plantilla a una muestra proporcional |
 | El rector lee la auditoría de todo el tenant, no solo la de su entidad jurídica | `audit_events` no tiene `legal_entity_id`, así que su alcance `legal_entity` no la puede filtrar. En el ancla, con una sola entidad, coinciden; en un tenant con varias, no | Cuando exista un tenant multi-entidad: llevar la entidad al evento de auditoría, o resolver el alcance a través del recurso |
+| El alcance `site` del coordinador no filtra el listado: ve las 64 personas del tenant | Es la deuda ya anotada de las acciones de colección, ahora visible en pantalla. La RLS sigue aislando entre colegios; lo que no filtra es entre sedes del mismo colegio | B9 o C3: construir el contexto desde el recurso y no a mano, o filtrar por sede en el `PersonDirectory` |
+| Solo se probó accesibilidad con teclado y estructura, no con lector de pantalla real | El E2E comprueba foco, orden, regiones, nombres y que el color no sea el único canal. Un lector de pantalla real encuentra cosas que ninguna aserción encuentra | Antes de D3: una pasada manual con NVDA o VoiceOver sobre J1 y J5 |
 | Compuerta TYPECHECK sin herramienta | Es una de las seis del DoD nivel A. A2 no pudo cerrarla: `api.github.com` bloqueado | Primera sesión con red sin restricción |
 | En acciones de colección —listar, crear— no hay `resourceTenantId` que comparar y esa comprobación se salta | La protección por fila queda en el global scope y la RLS, que sí la cubren con 30 pruebas. Hueco teórico: una Policy con la instancia delante que olvide pasar su `tenant_id` | Cuando existan controladores reales (B8): que el contexto se construya desde el modelo y no a mano |
 | TOTP implementado en el repositorio en vez de con una librería | `api.github.com` está bloqueado y no se puede instalar ninguna. Está verificado contra los seis vectores del RFC 6238, pero una librería mantenida recibe revisiones que este código no | Cuando la red lo permita: sustituir por dentro; las pruebas del RFC siguen valiendo |
@@ -944,28 +1046,33 @@ ahora cotejará 243 celdas contra el documento en vez de 216.
 
 ## Próximo paso concreto
 
-**Revisar el lienzo de B7 y decir que sí o qué cambiar.** No es un trámite: las seis
-decisiones que lista `Main` gobiernan todo lo que B8 construya, y cambiarlas después, con los
-componentes ya escritos, cuesta diez veces más.
+**Paso B9 de `PLAN.md`: cerrar el Slice 0.** Es el paso del que el plan dice, con todas las
+letras, que **«aquí termina lo que no se puede reparar después»**, y es la precondición dura
+para D1: los datos reales del personal no entran hasta que este cierre esté en verde.
 
-https://claude.ai/code/artifact/9883cebf-4044-4ea8-a694-ed6c6b496073
+Lo que pide, en orden: `/threat` sobre el slice entero, luego `/tenant-test`, luego `/dod`.
+Y después **verificar los doce criterios de aceptación del SPEC uno por uno y reportar el
+estado real de cada uno**. La instrucción es explícita: *no marcar el slice como terminado si
+algún criterio está en rojo.*
 
-**Con el visto bueno, sigue B8** —frontend del Slice 0, DoD nivel B incluida la compuerta de
-accesibilidad—. Lo que hay que saber antes de empezarlo:
+Estado de los doce, hasta donde llegan las pruebas de hoy:
 
-- Los componentes base se construyen **en el orden de `design-system.md`**: AppShell,
-  MyWorkInbox, DataTable, FilterBar, StatusPill, OwnerChip, DueDateBadge, PurposeDialog,
-  EmptyState, ConfirmWithImpact, WizardStepper, BulkImport. Sin lógica de negocio dentro.
-- **Ahí entra la deuda del CVE-2026-48019**: el formulario de acceso valida correos, así que
-  `email:rfc,strict`, nunca la regla `email` por defecto.
-- Solo hay Policies para `Person`, `Relationship` y `AuditEvent`. La matriz declara 17
-  recursos: lo demás se autoriza llamando al `Authorizer`.
-- **Ninguna pantalla puede ofrecer borrar un tenant**: la aplicación ya no puede, por decisión
-  del 25 de agosto. Dar de baja se dibuja como cambio de `status`.
-- El E2E de A2 fija tres cosas que ninguna pantalla nueva puede romper: que Vue monta, que el
-  estado **no depende solo del color**, y que se opera con teclado.
-- Las fuentes del lienzo están en `docs/ux/canvas/`. Si algo cambia en el diseño, se edita ahí
-  y se vuelve a sembrar; no se toca el fichero publicado.
+- **CA-01 a CA-03, CA-06** — verdes desde B1, con prueba.
+- **CA-04 y CA-05** — verdes desde B3 y comprobados por HTTP en B8.
+- **CA-07 a CA-09** — verdes desde B5.
+- **CA-10 y CA-11** — verdes desde B6.
+- **CA-12** — verde; se volvió a comprobar revirtiendo la migración de B8.
+
+Es decir: **la expectativa es que los doce estén en verde**, pero B9 existe para comprobarlo
+en frío en vez de confiar en que cada paso lo dejó bien. Dos cosas que conviene mirar con
+lupa ahí:
+
+- La **observabilidad** es la compuerta que sigue a medias —hay correlación y logs
+  estructurados, faltan métricas, trazas y monitoreo de colas—, y es del DoD nivel B que B9
+  tiene que cerrar entero.
+- El **alcance por sede del coordinador** no filtra hoy (ver deuda). No rompe ningún CA
+  —el aislamiento entre colegios sigue intacto— pero es lo más parecido a un agujero que
+  queda abierto dentro de un tenant.
 
 > **Nota de entorno para quien retome:** sin Docker, los servicios locales se levantan con
 > `pg_ctlcluster 16 main start` y `redis-server --daemonize yes`. **El contenedor los apaga

@@ -9,6 +9,7 @@
  * condición se pierde en un cambio de infraestructura, tiene que romperse aquí.
  */
 
+use App\Domains\Identity\Domain\User;
 use App\Domains\Shared\FoundationCheck;
 use App\Domains\Shared\TenantContext;
 use Illuminate\Database\QueryException;
@@ -16,7 +17,21 @@ use Illuminate\Support\Facades\DB;
 use Inertia\Testing\AssertableInertia;
 
 it('responde la pantalla de estado de la fundación', function () {
-    $this->get('/')
+    // B8 la movió de `/` a `/estado` y la puso detrás de acceso: cuenta los nombres de
+    // los dos roles de base de datos y la versión exacta de PostgreSQL, que no le sirve a
+    // un visitante y sí a quien busque contra qué apuntar. Ver el comentario de la ruta.
+    $tenant = createTenant('colegio-fundacion');
+    TenantContext::set($tenant->id);
+
+    $usuario = new User([
+        'email' => 'diagnostico@fundacion.test',
+        'status' => 'active',
+    ]);
+    $usuario->password = 'no-se-usa';
+    $usuario->save();
+
+    $this->actingAs($usuario)
+        ->get('/estado')
         ->assertOk()
         ->assertInertia(
             fn (AssertableInertia $page) => $page
@@ -27,6 +42,10 @@ it('responde la pantalla de estado de la fundación', function () {
                 ->has('comprobaciones.0.estado')
         );
 });
+
+it('la pantalla de diagnóstico no se sirve a quien no ha entrado', function () {
+    $this->get('/estado')->assertRedirect('/entrar');
+})->group('tenant-isolation');
 
 it('expone el punto de salud del framework', function () {
     $this->get('/up')->assertOk();

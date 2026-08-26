@@ -5,9 +5,10 @@
 /*
  * Tokens de docs/ux/design-system.md.
  *
- * Se declaran aquí desde el primer día para que las pantallas del Slice 0 (paso B7/B8)
- * no nazcan sobre colores improvisados de Tailwind. Los componentes base del sistema
- * de diseño NO se construyen todavía: eso es B8, después del lienzo aprobado en B7.
+ * Los diez primeros se declararon en A1, antes de que existiera una sola pantalla, para
+ * que las del Slice 0 no nacieran sobre colores improvisados de Tailwind. B7 los usó tal
+ * cual en el lienzo y añadió los tenues de cada estado, que son los que faltaban para
+ * poder pintar una píldora sin inventarse el fondo en cada sitio.
  */
 @layer base {
     :root {
@@ -22,6 +23,24 @@
         --color-critical: #a11b1b;
         /* Reservado a superficies P4. No reutilizar en ningún otro contexto. */
         --color-clinical: #5b21b6;
+
+        /* Trazo de iconos y bordes de control: más oscuro que `rule`, que solo separa. */
+        --color-stroke: #9aa4b0;
+
+        /*
+         * Fondos y bordes tenues. Cada par texto/fondo pasa 4.5:1 (WCAG 2.2 AA):
+         * ok 5.4:1 · warn 5.3:1 · critical 6.7:1 · accent 5.9:1 sobre su propio tenue.
+         */
+        --color-ok-soft: #e8f3ee;
+        --color-ok-line: #b6d8c8;
+        --color-warn-soft: #fbf1de;
+        --color-warn-line: #e6cf9a;
+        --color-critical-soft: #fbeaea;
+        --color-critical-line: #eabcbc;
+        --color-accent-soft: #e8eefc;
+        --color-accent-line: #b9cbf5;
+        --color-clinical-soft: #f0eafb;
+        --color-clinical-line: #cdb8f0;
     }
 
     html {
@@ -38,5 +57,33 @@
     :focus-visible {
         outline: 2px solid var(--color-accent);
         outline-offset: 2px;
+    }
+
+    /*
+     * Respeto a quien pidió menos movimiento. No es una cortesía: para alguien con
+     * trastorno vestibular una transición mal puesta produce mareo real.
+     */
+    @media (prefers-reduced-motion: reduce) {
+        *,
+        *::before,
+        *::after {
+            animation-duration: 0.01ms !important;
+            animation-iteration-count: 1 !important;
+            transition-duration: 0.01ms !important;
+            scroll-behavior: auto !important;
+        }
+    }
+}
+
+@layer components {
+    /*
+     * Salto al contenido: primer elemento enfocable de toda pantalla. Sin él, quien
+     * navega con teclado recorre el rail entero —seis enlaces— en cada página antes de
+     * llegar a lo que vino a hacer.
+     */
+    .salto-contenido {
+        @apply sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50
+               focus:rounded-control focus:bg-accent focus:px-4 focus:py-2 focus:text-base
+               focus:font-medium focus:text-white;
     }
 }
